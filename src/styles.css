@@ -9,6 +9,8 @@
   --board: 360px;
   /* Kantenlänge einer Blockzelle; wird für Spielfeld und Steine per JS gesetzt. */
   --bsz: 40px;
+  /* Rahmenbreite des Spielfelds (wie im Original ca. 2,5 % der Brettbreite) */
+  --bframe: calc(var(--board) * 0.025);
   color-scheme: dark;
 }
 
@@ -62,13 +64,14 @@ body {
 .best {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-weight: 900;
-  font-size: 28px;
+  font-size: 27px;
+  letter-spacing: 0.5px;
   color: #ffd84a;
   text-shadow: 0 2px 0 rgba(120, 70, 0, 0.6);
 }
-.best svg { width: 36px; height: 36px; fill: #24307a; filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.35)); }
+.best svg { width: 42px; height: 32px; fill: #24307a; filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.35)); }
 .best.record svg { animation: crown 0.6s ease-in-out 3; }
 @keyframes crown {
   50% { transform: scale(1.5) rotate(-12deg); fill: #ffd84a; filter: drop-shadow(0 0 8px #ffd84a); }
@@ -87,13 +90,15 @@ body {
 .icon-btn svg { width: 22px; height: 22px; stroke: var(--text); stroke-width: 2.4; stroke-linecap: round; fill: none; }
 
 /* ---------- Punktestand mit Edelstein ---------- */
-.score-wrap { position: relative; height: calc(var(--board) * 0.26); display: grid; place-items: center; margin-top: auto; }
+/* Wie im Original oben ausgerichtet: Krone, darunter direkt Punktestand und Spielfeld */
+.score-wrap { position: relative; width: var(--board); height: calc(var(--board) * 0.3); display: grid; place-items: center; align-content: start; padding-top: calc(var(--board) * 0.02); }
 .score {
   position: relative;
   z-index: 1;
-  font-size: calc(var(--board) * 0.2);
+  font-size: calc(var(--board) * 0.19);
   line-height: 1;
   letter-spacing: -1px;
+  -webkit-text-stroke: 1.5px rgba(40, 50, 90, 0.35);
   font-weight: 900;
   font-variant-numeric: tabular-nums;
   color: #fff;
@@ -107,25 +112,26 @@ body {
 .score-gem {
   position: absolute;
   left: 50%;
-  top: 50%;
-  width: calc(var(--board) * 0.15);
-  height: calc(var(--board) * 0.15);
-  margin: calc(var(--board) * -0.075);
+  width: calc(var(--board) * 0.145);
+  height: calc(var(--board) * 0.145);
+  /* Mitte der Zahl: Abstand oben + halbe Schrifthöhe */
+  top: calc(var(--board) * 0.12);
+  margin: calc(var(--board) * -0.0725);
   transform: rotate(45deg);
   border-radius: 6px;
-  background: linear-gradient(135deg, #e9fff4, #5ef0b0 45%, #1aa27a);
-  box-shadow: 0 0 18px rgba(110, 255, 190, 0.7);
-  opacity: 0.55;
+  background: linear-gradient(135deg, #8ff8e6 0%, #22d3c0 45%, #0f9a8e 100%);
+  box-shadow: 0 0 16px rgba(40, 230, 210, 0.55), inset 0 0 0 2px rgba(255, 255, 255, 0.25);
+  opacity: 0.95;
 }
 .score-gem.pulse { animation: gem-pulse 0.55s ease-out; }
 @keyframes gem-pulse {
-  0% { transform: rotate(45deg) scale(1); opacity: 0.55; }
-  35% { transform: rotate(45deg) scale(1.45); opacity: 1; box-shadow: 0 0 40px rgba(140, 255, 210, 1); }
-  100% { transform: rotate(45deg) scale(1); opacity: 0.55; }
+  0% { transform: rotate(45deg) scale(1); }
+  35% { transform: rotate(45deg) scale(1.3); box-shadow: 0 0 40px rgba(80, 255, 230, 1); }
+  100% { transform: rotate(45deg) scale(1); }
 }
 .combo-meter {
-  height: 22px;
-  margin: -6px 0 6px;
+  position: absolute;
+  bottom: calc(var(--board) * 0.02);
   white-space: nowrap;
   display: flex;
   align-items: center;
@@ -159,14 +165,16 @@ body {
   grid-template-columns: repeat(8, 1fr);
   grid-template-rows: repeat(8, 1fr);
   gap: 2px;
-  padding: 4px;
-  border-radius: 8px;
-  background: var(--board-bg);
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.18), 0 10px 24px rgba(0, 0, 0, 0.35);
+  padding: 1px;
+  /* Rahmen: leicht abgedunkelter Hintergrund, Feld innen dunkel wie im Original */
+  border: var(--bframe) solid rgba(0, 0, 0, 0.14);
+  border-radius: 6px;
+  background: var(--board-bg) padding-box;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 6px 18px rgba(0, 0, 0, 0.25);
 }
 .cell {
   position: relative;
-  border-radius: 3px;
+  border-radius: 2px;
   background: var(--cell-empty);
   box-shadow: inset 0 0 0 1px var(--cell-line);
 }
@@ -225,10 +233,10 @@ body {
   box-shadow: var(--blk-deco-shadow);
   clip-path: var(--blk-deco-clip);
 }
-/* Foto-Thema: jeder Block auf dem Feld zeigt seinen Ausschnitt (Innenmaß = Brett − 2×4px, Raster = (Brett − 6px) / 8). */
+/* Foto-Thema: jeder Block zeigt seinen Ausschnitt (Raster ≈ (Brett − 2 × Rahmen) / 8, Innenmaß abzüglich 1px Innenabstand). */
 body.has-photo[data-skin="foto"] .board .cell.filled {
   background:
-    var(--photo) calc((var(--board) - 6px) / -8 * var(--col)) calc((var(--board) - 6px) / -8 * var(--row)) / calc(var(--board) - 8px) calc(var(--board) - 8px) no-repeat,
+    var(--photo) calc((var(--board) - 2 * var(--bframe)) / -8 * var(--col)) calc((var(--board) - 2 * var(--bframe)) / -8 * var(--row)) / calc(var(--board) - 2 * var(--bframe) - 2px) calc(var(--board) - 2 * var(--bframe) - 2px) no-repeat,
     var(--c);
   background-clip: padding-box;
   background-origin: border-box;
@@ -518,7 +526,7 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   align-items: center;
-  margin-top: 10px;
+  margin-top: calc(var(--board) * 0.05);
 }
 .slot {
   position: relative;

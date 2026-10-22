@@ -83,14 +83,15 @@ let trayCellPx = 20;
 function layout(): void {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  // Platzbedarf: Kopfzeile + Punktestand (0,26 × Brett) + Brett + Tray (0,4 × Brett) + Ränder
-  const size = Math.floor(Math.min(vw - 24, 520, (vh - 110) / 1.68));
+  // Platzbedarf: Kopfzeile + Punktestand (0,3 × Brett) + Brett + Tray (0,4 × Brett) + Ränder
+  const size = Math.floor(Math.min(vw - 26, 520, (vh - 90) / 1.72));
   document.documentElement.style.setProperty("--board", `${size}px`);
   const r0 = cells[0].getBoundingClientRect();
   const r1 = cells[1].getBoundingClientRect();
   cellPx = r0.width;
   gapPx = r1.left - r0.right;
-  trayCellPx = Math.floor(Math.min(cellPx * 0.6, (size / 3 - 8) / 5));
+  // Tray-Steine wie im Original knapp halb so groß wie die Felder
+  trayCellPx = Math.floor(Math.min(cellPx * 0.46, (size / 3 - 8) / 5));
   boardWrap.style.setProperty("--bsz", `${cellPx}px`);
   renderTray(false);
 }
