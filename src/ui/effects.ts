@@ -182,14 +182,46 @@ export function banner(children: HTMLElement[], variant = "", ttl = 1000): void 
 }
 
 /** Combo-Anzeige: ×2/×3 mit Mäusen, ab 4 „Combo N“, ab 6 „Combo-Meister“. */
+/** Combo-Anzeige wie im Original: „Combo“ weiß, Zahl groß in Gold; ab 8 „Combo-Meister“ mit Krone. */
 export function comboContent(combo: number): HTMLElement[] {
-  if (combo >= 6) {
+  if (combo >= 8) {
     return [div("crown-icon"), text3d("Combo-Meister", "gold", "long"), text3d(`×${combo}`, "orange", "sub")];
   }
-  if (combo >= 4) return [text3d(`Combo ${combo}`, "theme")];
-  const row = div("combo-x");
-  row.append(div("mascot"), text3d(`×${combo}`, "orange"), div("mascot right"));
+  const row = div("combo-n");
+  row.append(text3d("Combo", "white"), text3d(String(combo), "gold"));
   return [row];
+}
+
+/** Mehrere Linien auf einmal: „×L“ mit zwei tanzenden Mäusen. */
+export function linesContent(lines: number): HTMLElement[] {
+  const row = div("combo-x");
+  row.append(div("mascot"), text3d(`×${lines}`, "orange"), div("mascot right"));
+  return [row];
+}
+
+const PRAISE_WORDS = ["Gut!", "Toll!", "Super!", "Klasse!", "Wunderbar!"];
+
+/** Eine einzelne Reihe: großes Herz mitten auf der Linie, Lobwort darüber, leuchtende Linie. */
+export function heartPraise(rows: number[], cols: number[]): void {
+  const horizontal = rows.length > 0;
+  const first = horizontal ? rows[0] * N : cols[0];
+  const last = horizontal ? rows[0] * N + N - 1 : (N - 1) * N + cols[0];
+  const a = cellRect(first);
+  const b = cellRect(last);
+  const cx = (a.x + b.x + b.w) / 2;
+  const cy = (a.y + b.y + b.h) / 2;
+  spawn(
+    div(horizontal ? "praise-line" : "praise-line col", horizontal
+      ? { left: `${a.x}px`, top: `${cy}px`, width: `${b.x + b.w - a.x}px` }
+      : { left: `${cx}px`, top: `${a.y}px`, height: `${b.y + b.h - a.y}px` }),
+    950,
+  );
+  const el = div("heart-praise", { left: `${cx}px`, top: `${cy - cellRect(0).h * 0.6}px` });
+  const word = document.createElement("span");
+  word.className = "word";
+  word.textContent = PRAISE_WORDS[Math.floor(Math.random() * PRAISE_WORDS.length)];
+  el.append(word, div("heart"));
+  spawn(el, 1300);
 }
 
 /** Partikel im Motiv des Themas (z. B. Kleeblatt) an einer Stelle im Fenster. */

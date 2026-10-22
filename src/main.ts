@@ -219,26 +219,33 @@ function renderComboMeter(bump = false): void {
 }
 
 let scoreAnim = 0;
-/** Zählt den angezeigten Punktestand hoch; `durMs` erzwingt eine Dauer (z. B. während der Feier). */
-function animateScore(durMs?: number): void {
+/**
+ * Wie im Original zählt der Punktestand gleichmäßig hoch: kleine Gewinne in ~0,3 s,
+ * große (z. B. Bonus) über bis zu 2,5 s. Neue Punkte während des Zählens laufen einfach weiter.
+ */
+function animateScore(): void {
   cancelAnimationFrame(scoreAnim);
   const from = shownScore;
   const to = state.score;
-  if (from === to) {
+  const scoreWrap = scoreEl.parentElement!;
+  if (from >= to) {
+    shownScore = to;
     scoreEl.textContent = String(to);
+    scoreWrap.classList.remove("counting");
     return;
   }
   const start = performance.now();
-  const dur = durMs ?? Math.min(450, 150 + (to - from) * 1.5);
+  const dur = Math.min(2500, Math.max(300, ((to - from) / 60) * 1000));
   scoreEl.classList.remove("bump");
   void scoreEl.offsetWidth;
   scoreEl.classList.add("bump");
+  scoreWrap.classList.add("counting");
   const step = (now: number) => {
     const t = Math.min(1, (now - start) / dur);
-    const eased = 1 - Math.pow(1 - t, 3);
-    shownScore = Math.round(from + (to - from) * eased);
+    shownScore = Math.round(from + (to - from) * t);
     scoreEl.textContent = String(shownScore);
     if (t < 1) scoreAnim = requestAnimationFrame(step);
+    else scoreWrap.classList.remove("counting");
   };
   scoreAnim = requestAnimationFrame(step);
 }
@@ -283,11 +290,16 @@ function commitMove(slot: number, row: number, col: number): void {
     fx.points(res.points, fx.centroid(res.clearedCells), res.combo >= 4 ? "green" : "gold");
     pulseScoreGem();
 
+    // Eine Reihe: Herz mit Lobwort; mehrere Reihen: „×L“ mit Mäusen (ab 4 zusätzlich großes Lob)
     const parts: HTMLElement[] = [];
-    const praise = praiseLabel(res.linesCleared);
-    if (praise) parts.push(fx.text3d(praise, praiseVariant(res.linesCleared)));
+    if (res.linesCleared === 1) {
+      if (res.combo < 2) fx.heartPraise(res.clearedRows, res.clearedCols);
+    } else {
+      if (res.linesCleared >= 4) parts.push(fx.text3d(praiseLabel(res.linesCleared)!, praiseVariant(res.linesCleared)));
+      parts.push(...fx.linesContent(res.linesCleared));
+    }
     if (res.combo >= 2) parts.push(...fx.comboContent(res.combo));
-    if (parts.length) fx.banner(parts, res.linesCleared >= 4 || res.combo >= 6 ? "huge" : "");
+    if (parts.length) fx.banner(parts, res.linesCleared >= 4 || res.combo >= 8 ? "huge" : "");
     sfx.playClear(res.linesCleared, res.combo);
     sfx.vibrate(res.linesCleared > 1 ? [20, 30, 35] : 25);
     if (res.linesCleared >= 3) shake();
@@ -297,8 +309,7 @@ function commitMove(slot: number, row: number, col: number): void {
   }
 
   setBest();
-  // Bei „Alles weg!“ zählt der Punktestand während der ganzen Feier hoch
-  animateScore(res.allClear ? 2600 : undefined);
+  animateScore();
   renderComboMeter(res.linesCleared > 0);
   renderTray(res.dealtNewTray);
   if (state.gameOver) scheduleGameOver();

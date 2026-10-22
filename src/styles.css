@@ -1,5 +1,19 @@
 @import "./skins.css";
 
+/* Spielschriften (SIL Open Font License, siehe src/fonts/OFL.txt) – lokal eingebunden, damit es offline geht */
+@font-face {
+  font-family: "Lilita One";
+  src: url("./fonts/lilita-one-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Nunito";
+  src: url("./fonts/nunito-latin.woff2") format("woff2");
+  font-weight: 200 1000;
+  font-display: swap;
+}
+
 :root {
   --panel: #241243;
   --text: #fff6fb;
@@ -38,7 +52,8 @@ body {
   background: var(--page-bg);
   background-color: #2c2a6b;
   color: var(--text);
-  font-family: ui-rounded, "SF Pro Rounded", "Nunito", "Varela Round", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: "Nunito", ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-weight: 800;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
@@ -95,6 +110,8 @@ body {
 .score {
   position: relative;
   z-index: 1;
+  font-family: "Nunito", sans-serif;
+  font-weight: 900;
   font-size: calc(var(--board) * 0.19);
   line-height: 1;
   letter-spacing: -1px;
@@ -438,7 +455,9 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
 
 /* 3D-Schrift für Punkte, Lob und Combos */
 .t3d {
-  font-weight: 900;
+  font-family: "Lilita One", "Nunito", sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.5px;
   white-space: nowrap;
   background: linear-gradient(180deg, var(--t1, #fff9c8) 15%, var(--t2, #ffcf3a) 55%, var(--t3, #f08a00));
   -webkit-background-clip: text;
@@ -456,6 +475,92 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
 .t3d.orange { --t1: #fff4c8; --t2: #ffb43a; --t3: #ff6a1a; --te: #6b2200; }
 .t3d.rainbow { --t1: #ff5f8a; --t2: #ffe04a; --t3: #4ad8ff; --te: #5a1a6b; background: linear-gradient(90deg, #ff4f7a, #ffa53a, #ffe04a, #5fe36a, #4ad8ff, #a46bff); -webkit-background-clip: text; background-clip: text; }
 .t3d.gold { --t1: #fffbe0; --t2: #ffd84a; --t3: #d48a00; --te: #5a3300; }
+.t3d.white { --t1: #ffffff; --t2: #ffffff; --t3: #dfe4ff; --te: #2a2050; }
+/* „Combo“ weiß und leicht schräg, die Zahl groß in Gold – wie im Original */
+.combo-n { display: flex; align-items: baseline; gap: 6px; }
+.combo-n .t3d.white { transform: skewX(-8deg); }
+.banner .combo-n .t3d.gold { font-size: min(64px, calc(var(--board) * 0.17)); animation: num-pop 0.35s cubic-bezier(0.3, 1.8, 0.5, 1) 0.08s both; }
+@keyframes num-pop { from { transform: scale(0.2); } }
+
+/* Lob mit Herz bei einer einzelnen Reihe */
+.heart-praise {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  z-index: 4;
+  animation: heart-fade 1.25s ease-out forwards;
+}
+.heart-praise .word {
+  font-family: "Nunito", sans-serif;
+  font-weight: 900;
+  font-size: min(34px, calc(var(--board) * 0.09));
+  color: #fff;
+  white-space: nowrap;
+  text-shadow: 0 0 10px #d14bff, 0 0 20px #b23bff, 0 2px 0 #6b1c8f;
+  animation: word-in 0.3s ease-out 0.15s both;
+}
+.heart-praise .heart {
+  width: calc(var(--bsz) * 2);
+  height: calc(var(--bsz) * 1.8);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 22'%3E%3Cdefs%3E%3CradialGradient id='g' cx='35%25' cy='30%25' r='75%25'%3E%3Cstop offset='0' stop-color='%23ffb3f4'/%3E%3Cstop offset='.55' stop-color='%23f04fe0'/%3E%3Cstop offset='1' stop-color='%23b11ab8'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M12 21S1.5 14.4 1.5 7.2A5.4 5.4 0 0 1 12 4.6a5.4 5.4 0 0 1 10.5 2.6C22.5 14.4 12 21 12 21z'/%3E%3Cellipse cx='7.5' cy='7.5' rx='2.4' ry='1.5' fill='white' opacity='.6' transform='rotate(-30 7.5 7.5)'/%3E%3C/svg%3E") center / contain no-repeat;
+  filter: drop-shadow(0 0 12px #ff5fe8);
+  animation: heart-pop 0.45s cubic-bezier(0.3, 1.7, 0.5, 1) both;
+}
+@keyframes heart-pop {
+  0% { transform: scale(0.1); }
+  60% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+@keyframes word-in { from { opacity: 0; transform: translateY(8px) scale(0.7); } }
+@keyframes heart-fade {
+  0%, 75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+/* Leuchtende Linie quer durch die geschaffte Reihe */
+.praise-line {
+  position: absolute;
+  height: 3px;
+  margin-top: -1.5px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, #ff8cf0 15%, #fff 50%, #ff8cf0 85%, transparent);
+  box-shadow: 0 0 10px #ff5fe8;
+  animation: praise-line 0.9s ease-out forwards;
+  transform-origin: center;
+}
+.praise-line.col { width: 3px; height: auto; margin: 0 0 0 -1.5px; background: linear-gradient(180deg, transparent, #ff8cf0 15%, #fff 50%, #ff8cf0 85%, transparent); }
+@keyframes praise-line {
+  0% { transform: scale(0, 1); opacity: 1; }
+  30% { transform: scale(1, 1); }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.praise-line.col { animation-name: praise-line-col; }
+@keyframes praise-line-col {
+  0% { transform: scale(1, 0); opacity: 1; }
+  30% { transform: scale(1, 1); }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Funkelnde Sterne über dem Punktestand, solange er hochzählt */
+.score-wrap.counting::before,
+.score-wrap.counting::after {
+  content: "✦";
+  position: absolute;
+  z-index: 2;
+  color: #fff;
+  text-shadow: 0 0 8px #fff;
+  animation: twinkle 0.5s ease-in-out infinite alternate;
+}
+.score-wrap.counting::before { left: 38%; top: 2%; font-size: 18px; }
+.score-wrap.counting::after { left: 58%; top: 8%; font-size: 12px; animation-delay: 0.25s; }
+@keyframes twinkle {
+  from { opacity: 0.2; transform: scale(0.6) rotate(0deg); }
+  to { opacity: 1; transform: scale(1.1) rotate(45deg); }
+}
 .t3d.theme { --t1: #ffffff; --t2: var(--fx-accent); --t3: var(--p7); --te: #241046; }
 
 /* Combo-Zahl auf jedem abgeräumten Block */
