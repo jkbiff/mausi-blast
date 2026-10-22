@@ -17,7 +17,7 @@
   <body>
     <div id="app">
       <header class="topbar">
-        <div class="best" title="Rekord">
+        <div class="best" title="Best">
           <svg viewBox="2 4 20 15" aria-hidden="true"><path d="M3 18h18l-1.5-10-4.5 4-3-7-3 7-4.5-4z" /><circle cx="3.6" cy="7.4" r="1.4" /><circle cx="12" cy="4.6" r="1.4" /><circle cx="20.4" cy="7.4" r="1.4" /></svg>
           <span id="best">0</span>
         </div>
@@ -41,7 +41,7 @@
       </main>
 
       <div id="tray" class="tray">
-        <div id="no-space" class="no-space hidden">Kein Platz mehr</div>
+        <div id="no-space" class="no-space hidden">No Space Left</div>
       </div>
     </div>
 
@@ -49,29 +49,29 @@
 
     <div id="overlay-gameover" class="overlay hidden">
       <div class="panel">
-        <h2>Spiel vorbei</h2>
-        <div class="label">Punkte</div>
+        <h2>Game Over</h2>
+        <div class="label">Score</div>
         <div id="go-score" class="go-score">0</div>
-        <div id="go-record" class="go-record hidden">Neuer Rekord!</div>
-        <div class="go-best">Rekord: <span id="go-best">0</span></div>
-        <button id="btn-restart" class="btn primary">Nochmal spielen</button>
+        <div id="go-record" class="go-record hidden">New Best!</div>
+        <div class="go-best">Best: <span id="go-best">0</span></div>
+        <button id="btn-restart" class="btn primary">Play Again</button>
       </div>
     </div>
 
     <div id="overlay-settings" class="overlay hidden">
       <div class="panel">
-        <h2>Menü</h2>
+        <h2>Menu</h2>
         <label class="toggle"><span>Sound</span><input type="checkbox" id="opt-sound" /><i></i></label>
         <label class="toggle"><span>Vibration</span><input type="checkbox" id="opt-haptics" /><i></i></label>
         <div class="skin-row">
-          <span>Skin-Album</span>
+          <span>Skin Album</span>
           <div class="skins" id="skins"></div>
-          <button id="btn-photo" class="link-btn hidden">Anderes Foto wählen</button>
+          <button id="btn-photo" class="link-btn hidden">Choose another photo</button>
           <input id="photo-input" type="file" accept="image/*" hidden />
         </div>
-        <label class="toggle small"><span>Neues Thema bei „Alles weg!“</span><input type="checkbox" id="opt-skin-cycle" /><i></i></label>
-        <button id="btn-newgame" class="btn">Neues Spiel</button>
-        <button id="btn-close-settings" class="btn primary">Weiterspielen</button>
+        <label class="toggle small"><span>New skin on „All Clear!“</span><input type="checkbox" id="opt-skin-cycle" /><i></i></label>
+        <button id="btn-newgame" class="btn">New Game</button>
+        <button id="btn-close-settings" class="btn primary">Resume</button>
         <p class="hint">Tipp: Im Browser „Zum Home-Bildschirm“ wählen – dann startet Mausi Blast wie eine App, auch offline.</p>
       </div>
     </div>

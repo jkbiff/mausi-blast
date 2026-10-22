@@ -19,6 +19,6 @@ export function comboLabel(combo: number): string | null {
 
 /** Lob für viele Linien auf einmal; bei einer Linie keins. */
 export function praiseLabel(lines: number): string | null {
-  if (lines >= 6) return "Unglaublich!";
-  return ([null, null, "Gut!", "Super!", "Mega!", "Fantastisch!"] as const)[lines] ?? null;
+  if (lines >= 6) return "Unbelievable!";
+  return ([null, null, "Good!", "Great!", "Excellent!", "Amazing!"] as const)[lines] ?? null;
 }

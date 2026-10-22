@@ -185,7 +185,7 @@ export function banner(children: HTMLElement[], variant = "", ttl = 1000): void 
 /** Combo-Anzeige wie im Original: „Combo“ weiß, Zahl groß in Gold; ab 8 „Combo-Meister“ mit Krone. */
 export function comboContent(combo: number): HTMLElement[] {
   if (combo >= 8) {
-    return [div("crown-icon"), text3d("Combo-Meister", "gold", "long"), text3d(`×${combo}`, "orange", "sub")];
+    return [div("crown-icon"), text3d("Combo Master", "gold", "long"), text3d(`×${combo}`, "orange", "sub")];
   }
   const row = div("combo-n");
   row.append(text3d("Combo", "white"), text3d(String(combo), "gold"));
@@ -204,13 +204,13 @@ export function colorGone(): void {
   const base = fx.getBoundingClientRect();
   const at = { x: base.width * 0.5, y: base.height * 0.22 };
   const el = div("color-gone", { left: `${at.x}px`, top: `${at.y}px` });
-  el.appendChild(text3d("Farbe weg!", "rose"));
+  el.appendChild(text3d("Color Gone!", "rose"));
   spawn(el, 1300);
   const colors = ["#ff4f7a", "#ffa53a", "#ffe04a", "#5fe36a", "#4ad8ff", "#a46bff"];
   colors.forEach((c, k) => sparks(at, 5, 90, c, k * 30));
 }
 
-const PRAISE_WORDS = ["Gut!", "Toll!", "Super!", "Klasse!", "Wunderbar!"];
+const PRAISE_WORDS = ["Good!", "Great!", "Excellent!", "Wonderful!", "Amazing!"];
 
 /** Eine einzelne Reihe: großes Herz mitten auf der Linie, Lobwort darüber, leuchtende Linie. */
 export function heartPraise(rows: number[], cols: number[]): void {
@@ -376,7 +376,7 @@ export function celebrate(themeName: string | null): void {
     const title = div("theme-title");
     const name = div("name");
     name.append(div("mascot"), text3d(themeName, "gold"), div("mascot right"));
-    title.append(text3d("Neues Thema", "cyan", "sub"), name);
+    title.append(text3d("New Skin", "cyan", "sub"), name);
     layer.appendChild(title);
   }
   document.body.appendChild(layer);

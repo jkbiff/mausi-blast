@@ -112,7 +112,7 @@ describe("Combo", () => {
   });
 
   it("Lobtexte steigen mit der Anzahl Linien", () => {
-    expect([1, 2, 3, 4, 5, 6, 7].map(praiseLabel)).toEqual([null, "Gut!", "Super!", "Mega!", "Fantastisch!", "Unglaublich!", "Unglaublich!"]);
+    expect([1, 2, 3, 4, 5, 6, 7].map(praiseLabel)).toEqual([null, "Good!", "Great!", "Excellent!", "Amazing!", "Unbelievable!", "Unbelievable!"]);
   });
 });
 

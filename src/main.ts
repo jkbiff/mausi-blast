@@ -197,7 +197,7 @@ function setBest(): void {
   if (!recordCelebrated && bestAtStart > 0 && state.score > bestAtStart) {
     recordCelebrated = true;
     window.setTimeout(() => {
-      fx.banner([fx.text3d("Neuer Rekord!", "gold")], "record", 1500);
+      fx.banner([fx.text3d("New Best!", "gold")], "record", 1500);
       bestEl.parentElement!.classList.add("record");
       window.setTimeout(() => bestEl.parentElement!.classList.remove("record"), 1900);
       sfx.playRecord();
@@ -343,7 +343,7 @@ function allClearSequence(res: MoveResult, color: number): void {
     fx.points(res.points, fx.centroid(res.clearedCells), "gold");
     pulseScoreGem();
     // Kurz genug, dass es vor dem Themenwechsel verschwindet (Name des neuen Themas folgt)
-    const parts = [fx.text3d("Alles weg!", "rainbow")];
+    const parts = [fx.text3d("All Clear!", "rainbow")];
     if (res.combo >= 2) parts.push(...fx.comboContent(res.combo));
     fx.banner(parts, "huge", 720);
   }, 480);
@@ -544,7 +544,7 @@ $("btn-settings").addEventListener("click", () => {
   hapticsOpt.checked = settings.haptics;
   skinCycleOpt.checked = settings.skinCycle;
   renderSkins();
-  newGameBtn.textContent = "Neues Spiel";
+  newGameBtn.textContent = "New Game";
   newGameBtn.classList.remove("danger");
   settingsEl.classList.remove("hidden");
 });
@@ -558,7 +558,7 @@ settingsEl.addEventListener("click", (e) => {
 newGameBtn.addEventListener("click", () => {
   // Zweimal tippen, damit man nicht versehentlich die Runde verliert.
   if (!newGameBtn.classList.contains("danger") && !state.gameOver && state.score > 0) {
-    newGameBtn.textContent = "Wirklich? Nochmal tippen";
+    newGameBtn.textContent = "Sure? Tap again";
     newGameBtn.classList.add("danger");
     return;
   }
@@ -599,7 +599,7 @@ photoInput.addEventListener("change", async () => {
     setPhoto(dataUrl);
     applySkin("foto");
   } catch {
-    alert("Das Foto konnte leider nicht geladen werden.");
+    alert("Sorry, this photo could not be loaded.");
   }
 });
 
