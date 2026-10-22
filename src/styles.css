@@ -55,37 +55,28 @@ body {
 .topbar {
   width: var(--board);
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  height: 44px;
+  height: 48px;
 }
 .best {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-weight: 900;
-  font-size: 22px;
+  font-size: 28px;
   color: #ffd84a;
   text-shadow: 0 2px 0 rgba(120, 70, 0, 0.6);
 }
-.best svg { width: 28px; height: 28px; fill: #24307a; filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.35)); }
+.best svg { width: 36px; height: 36px; fill: #24307a; filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.35)); }
 .best.record svg { animation: crown 0.6s ease-in-out 3; }
 @keyframes crown {
   50% { transform: scale(1.5) rotate(-12deg); fill: #ffd84a; filter: drop-shadow(0 0 8px #ffd84a); }
 }
-.logo {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 900;
-  letter-spacing: 0.5px;
-  color: #fff;
-  opacity: 0.85;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
-}
 .icon-btn {
   justify-self: end;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: 0;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.15);
@@ -96,23 +87,30 @@ body {
 .icon-btn svg { width: 22px; height: 22px; stroke: var(--text); stroke-width: 2.4; stroke-linecap: round; fill: none; }
 
 /* ---------- Punktestand mit Edelstein ---------- */
-.score-wrap { position: relative; height: 104px; display: grid; place-items: center; align-content: center; margin-top: auto; }
+.score-wrap { position: relative; height: calc(var(--board) * 0.26); display: grid; place-items: center; margin-top: auto; }
 .score {
   position: relative;
   z-index: 1;
-  font-size: 54px;
+  font-size: calc(var(--board) * 0.2);
+  line-height: 1;
+  letter-spacing: -1px;
   font-weight: 900;
   font-variant-numeric: tabular-nums;
   color: #fff;
-  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.3), 0 0 2px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 4px 0 rgba(0, 0, 0, 0.3), 0 0 3px rgba(0, 0, 0, 0.4);
+}
+/* Punktestand ploppt kurz auf, wenn Punkte dazukommen */
+.score.bump { animation: score-bump 0.22s ease-out; }
+@keyframes score-bump {
+  40% { transform: scale(1.18); }
 }
 .score-gem {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 46px;
-  height: 46px;
-  margin: -30px 0 0 -23px;
+  width: calc(var(--board) * 0.15);
+  height: calc(var(--board) * 0.15);
+  margin: calc(var(--board) * -0.075);
   transform: rotate(45deg);
   border-radius: 6px;
   background: linear-gradient(135deg, #e9fff4, #5ef0b0 45%, #1aa27a);
@@ -126,12 +124,13 @@ body {
   100% { transform: rotate(45deg) scale(1); opacity: 0.55; }
 }
 .combo-meter {
-  position: absolute;
-  bottom: 8px;
+  height: 22px;
+  margin: -6px 0 6px;
+  white-space: nowrap;
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 900;
   color: #ffe066;
   text-transform: uppercase;
@@ -253,16 +252,16 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
 @keyframes rainbow-glow { from { opacity: 0.7; } to { opacity: 1; } }
 
 /* Gerade gelegt: kurzes türkises Aufglühen */
-.cell.placed { animation: place-pop 0.2s ease-out; }
+.cell.placed { animation: place-pop 0.14s ease-out; }
 .cell.placed::before {
   content: "";
   position: absolute;
   inset: -2px;
   z-index: 2;
   border-radius: 4px;
-  border: 2px solid #9ffcff;
-  box-shadow: 0 0 10px #45e6ff, inset 0 0 10px rgba(120, 240, 255, 0.8);
-  animation: place-glow 0.5s ease-out forwards;
+  border: 2px solid var(--fx-accent);
+  box-shadow: 0 0 10px var(--fx-accent), inset 0 0 10px var(--fx-accent);
+  animation: place-glow 0.32s ease-out forwards;
   pointer-events: none;
 }
 @keyframes place-pop {
@@ -284,7 +283,7 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
 #fx-global { position: fixed; inset: 0; pointer-events: none; z-index: 15; }
 
 /* Block zerspringt */
-.fx-cell { position: absolute; animation: burst 0.32s ease-in forwards; }
+.fx-cell { position: absolute; animation: burst 0.22s ease-in forwards; }
 @keyframes burst {
   0% { transform: scale(1); filter: brightness(1); }
   30% { transform: scale(1.08); filter: brightness(2.2); }
@@ -297,7 +296,7 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
   background: var(--c);
   clip-path: polygon(0 0, 100% 30%, 60% 100%);
   box-shadow: inset 0 0 0 40px rgba(255, 255, 255, 0.35);
-  animation: shard 0.7s cubic-bezier(0.15, 0.6, 0.35, 1) forwards;
+  animation: shard 0.5s cubic-bezier(0.15, 0.6, 0.35, 1) forwards;
 }
 @keyframes shard {
   from { transform: translate(0, 0) rotate(0); opacity: 1; }
@@ -309,7 +308,7 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
   border-radius: 6px;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95) 30%, #fff 50%, rgba(255, 255, 255, 0.95) 70%, transparent);
   box-shadow: 0 0 16px rgba(255, 255, 255, 0.9);
-  animation: streak 0.42s ease-out forwards;
+  animation: streak 0.3s ease-out forwards;
 }
 .streak.col { background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.95) 30%, #fff 50%, rgba(255, 255, 255, 0.95) 70%, transparent); }
 @keyframes streak {
@@ -330,7 +329,7 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
   border-radius: 50%;
   background: #fff;
   box-shadow: 0 0 6px var(--c, #fff);
-  animation: fly 0.6s ease-out forwards;
+  animation: fly 0.45s ease-out forwards;
 }
 @keyframes fly {
   from { transform: translate(0, 0) scale(1); opacity: 1; }
@@ -364,7 +363,7 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
   display: grid;
   place-items: center;
   font-size: calc(var(--bsz) * 0.62);
-  animation: cell-num 0.8s ease-out forwards;
+  animation: cell-num 0.6s ease-out forwards;
 }
 @keyframes cell-num {
   0% { opacity: 0; transform: scale(0.3); }
@@ -378,7 +377,7 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
   position: absolute;
   transform: translate(-50%, -50%);
   font-size: 46px;
-  animation: points 1s ease-out forwards;
+  animation: points 0.8s ease-out forwards;
 }
 @keyframes points {
   0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
@@ -397,7 +396,7 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
   flex-direction: column;
   align-items: center;
   transform: translate(-50%, -50%);
-  animation: banner 1.2s ease-out forwards;
+  animation: banner 0.95s ease-out forwards;
   z-index: 4;
 }
 /* Schriftgrößen an die Brettbreite gekoppelt, damit lange Wörter nicht überlaufen */
@@ -531,7 +530,7 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
 }
 .slot.lifted .piece { visibility: hidden; }
 .slot.disabled .piece { opacity: 0.35; filter: grayscale(0.9); }
-.slot.deal .piece { animation: deal 0.32s cubic-bezier(0.3, 1.4, 0.5, 1) backwards; }
+.slot.deal .piece { animation: deal 0.22s cubic-bezier(0.3, 1.4, 0.5, 1) backwards; }
 @keyframes deal {
   from { transform: translateY(40px) scale(0.3); opacity: 0; }
   to { transform: none; opacity: 1; }
@@ -548,14 +547,14 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
   will-change: transform;
 }
 .drag-layer .piece {
-  animation: grab 0.12s ease-out;
+  animation: grab 0.09s ease-out;
   transform-origin: 50% 100%;
   filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.4));
 }
-.drag-layer.returning { transition: transform 0.18s ease-in, opacity 0.18s; opacity: 0.6; }
+.drag-layer.returning { transition: transform 0.14s ease-in, opacity 0.14s; opacity: 0.6; }
 @keyframes grab {
-  from { transform: scale(0.55); }
-  to { transform: scale(1); }
+  from { transform: translateY(var(--lift, 0px)) scale(var(--s0, 0.55)); }
+  to { transform: none; }
 }
 
 /* ---------- Overlays ---------- */
@@ -565,7 +564,7 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
   z-index: 20;
   display: grid;
   place-items: center;
-  padding: 16px;
+  padding: calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 12px);
   background: rgba(10, 4, 24, 0.7);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -575,7 +574,7 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
 @keyframes fade-in { from { opacity: 0; } }
 .panel {
   width: min(380px, 100%);
-  max-height: calc(100dvh - 32px);
+  max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px);
   overflow-y: auto;
   overscroll-behavior: contain;
   touch-action: pan-y;

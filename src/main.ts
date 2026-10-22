@@ -83,7 +83,8 @@ let trayCellPx = 20;
 function layout(): void {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const size = Math.floor(Math.min(vw - 24, 520, (vh - 140) / 1.45));
+  // Platzbedarf: Kopfzeile + Punktestand (0,26 × Brett) + Brett + Tray (0,4 × Brett) + Ränder
+  const size = Math.floor(Math.min(vw - 24, 520, (vh - 110) / 1.68));
   document.documentElement.style.setProperty("--board", `${size}px`);
   const r0 = cells[0].getBoundingClientRect();
   const r1 = cells[1].getBoundingClientRect();
@@ -222,7 +223,10 @@ function animateScore(): void {
     return;
   }
   const start = performance.now();
-  const dur = Math.min(700, 250 + (to - from) * 2);
+  const dur = Math.min(450, 150 + (to - from) * 1.5);
+  scoreEl.classList.remove("bump");
+  void scoreEl.offsetWidth;
+  scoreEl.classList.add("bump");
   const step = (now: number) => {
     const t = Math.min(1, (now - start) / dur);
     const eased = 1 - Math.pow(1 - t, 3);
@@ -264,8 +268,6 @@ function commitMove(slot: number, row: number, col: number): void {
 
   renderBoard({ placed: res.placedCells });
   fx.placeSparkles(res.placedCells);
-  const sr = slots[slot].getBoundingClientRect();
-  fx.motifBurst(sr.left + sr.width / 2, sr.top + sr.height / 2);
 
   if (res.linesCleared > 0) {
     const placed = new Set(res.placedCells);
@@ -448,16 +450,22 @@ trayEl.addEventListener("pointerdown", (e) => {
   const piece = getPiece(item.pieceId);
   const layer = document.createElement("div");
   layer.className = "drag-layer";
-  layer.appendChild(pieceEl(piece, item.color, cellPx, gapPx));
+  const el = pieceEl(piece, item.color, cellPx, gapPx);
+  layer.appendChild(el);
   document.body.appendChild(layer);
 
   const w = piece.w * cellPx + (piece.w - 1) * gapPx;
   const h = piece.h * cellPx + (piece.h - 1) * gapPx;
-  // Bei Touch schwebt der Stein über dem Finger, damit der Daumen nichts verdeckt.
-  const lift = e.pointerType === "mouse" ? 0 : h / 2 + cellPx * 1.1;
+  // Bei Touch springt der Stein deutlich über den Finger, damit der Daumen nichts verdeckt.
+  const lift = e.pointerType === "mouse" ? 0 : h / 2 + cellPx * 2.3;
+  // Sprung startet in Tray-Größe am Finger (siehe @keyframes grab)
+  el.style.setProperty("--lift", `${lift}px`);
+  el.style.setProperty("--s0", String(trayCellPx / cellPx));
   drag = { slot, piece, color: item.color, layer, pointerId: e.pointerId, lift, w, h, anchor: null };
   slotEl.classList.add("lifted");
   moveDrag(e.clientX, e.clientY);
+  const sr = slotEl.getBoundingClientRect();
+  fx.motifBurst(sr.left + sr.width / 2, sr.top + sr.height / 2);
   sfx.playPickup();
 });
 

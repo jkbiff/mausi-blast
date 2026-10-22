@@ -69,7 +69,7 @@ export function sparks(at: Pt, count: number, spread = 50, color = "#fff", delay
         "--dx": `${Math.cos(a) * d}px`,
         "--dy": `${Math.sin(a) * d}px`,
       }),
-      650 + delay,
+      500 + delay,
       parent,
     );
   }
@@ -98,7 +98,7 @@ export function shatter(indices: number[], colorOf: (i: number) => string, rows:
     const r = cellRect(i);
     const horizontal = rowSet.has(row);
     const away = horizontal ? Math.sign(col - oc) || (Math.random() < 0.5 ? -1 : 1) : Math.sign(row - or) || 1;
-    const delay = Math.round((horizontal ? Math.abs(col - oc) : Math.abs(row - or)) * 28);
+    const delay = Math.round((horizontal ? Math.abs(col - oc) : Math.abs(row - or)) * 18);
     const color = colorOf(i);
     const cell = div("fx-cell", {
       left: `${r.x}px`,
@@ -108,14 +108,14 @@ export function shatter(indices: number[], colorOf: (i: number) => string, rows:
       animationDelay: `${delay}ms`,
     });
     cell.dataset.c = color;
-    spawn(cell, 360 + delay);
+    spawn(cell, 260 + delay);
     for (let k = 0; k < 5; k++) {
       const along = away * rand(40, 120);
       const across = rand(-30, 30);
       const shard = div("shard", {
         left: `${r.x + rand(0, r.w * 0.6)}px`,
         top: `${r.y + rand(0, r.h * 0.6)}px`,
-        animationDelay: `${delay + 60}ms`,
+        animationDelay: `${delay + 40}ms`,
         "--s": `${rand(r.w * 0.25, r.w * 0.5)}px`,
         "--dx": `${horizontal ? along : across}px`,
         "--dy": `${(horizontal ? across : along) + rand(0, 25)}px`,
@@ -124,7 +124,7 @@ export function shatter(indices: number[], colorOf: (i: number) => string, rows:
       shard.dataset.c = color;
       shard.style.opacity = "0";
       shard.style.animationFillMode = "both";
-      spawn(shard, 800 + delay);
+      spawn(shard, 600 + delay);
     }
   }
 }
@@ -141,7 +141,7 @@ export function streaks(rows: number[], cols: number[]): void {
         width: `${b.x + b.w - a.x + 8}px`,
         height: `${b.y + b.h - a.y + 4}px`,
       }),
-      460,
+      340,
     );
   };
   for (const r of rows) line(r * N, r * N + N - 1, "row");
@@ -157,25 +157,25 @@ export function cellNumbers(indices: number[], n: number): void {
       top: `${r.y}px`,
       width: `${r.w}px`,
       height: `${r.h}px`,
-      animationDelay: `${(k % N) * 25}ms`,
+      animationDelay: `${(k % N) * 15}ms`,
     });
     el.appendChild(text3d(String(n), "orange"));
     el.style.opacity = "0";
     el.style.animationFillMode = "both";
-    spawn(el, 900 + (k % N) * 25);
+    spawn(el, 700 + (k % N) * 15);
   });
 }
 
 export function points(value: number, at: Pt, variant = "gold"): void {
   const el = div("points", { left: `${at.x}px`, top: `${at.y}px` });
   el.appendChild(text3d(String(value), variant));
-  spawn(el, 1050);
+  spawn(el, 850);
 }
 
 /** Großes Banner über dem Feld; ersetzt ein noch sichtbares Banner derselben Art. */
-export function banner(children: HTMLElement[], variant = "", ttl = 1250): void {
+export function banner(children: HTMLElement[], variant = "", ttl = 1000): void {
   fx.querySelectorAll(variant.includes("record") ? ".banner.record" : ".banner:not(.record)").forEach((b) => b.remove());
-  const b = div(`banner ${variant}`.trim());
+  const b = div(`banner ${variant}`.trim(), { animationDuration: `${ttl - 50}ms` });
   b.append(...children);
   spawn(b, ttl);
 }
