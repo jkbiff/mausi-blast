@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="20%" r="90%">
+      <stop offset="0" stop-color="#4a2185"/>
+      <stop offset="1" stop-color="#160a33"/>
+    </radialGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".45"/>
+      <stop offset=".5" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity=".2"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- Ohren -->
+  <g>
+    <rect x="96" y="96" width="120" height="120" rx="28" fill="#ff5fa2"/>
+    <rect x="96" y="96" width="120" height="120" rx="28" fill="url(#shine)"/>
+    <rect x="296" y="96" width="120" height="120" rx="28" fill="#ff5fa2"/>
+    <rect x="296" y="96" width="120" height="120" rx="28" fill="url(#shine)"/>
+    <rect x="126" y="126" width="60" height="60" rx="16" fill="#ffc2dc"/>
+    <rect x="326" y="126" width="60" height="60" rx="16" fill="#ffc2dc"/>
+  </g>
+  <!-- Kopf -->
+  <rect x="136" y="186" width="240" height="220" rx="56" fill="#a66cff"/>
+  <rect x="136" y="186" width="240" height="220" rx="56" fill="url(#shine)"/>
+  <!-- Augen -->
+  <rect x="190" y="258" width="34" height="42" rx="12" fill="#1d0f38"/>
+  <rect x="288" y="258" width="34" height="42" rx="12" fill="#1d0f38"/>
+  <rect x="198" y="264" width="12" height="12" rx="4" fill="#fff"/>
+  <rect x="296" y="264" width="12" height="12" rx="4" fill="#fff"/>
+  <!-- Nase -->
+  <rect x="236" y="318" width="40" height="30" rx="12" fill="#ff5fa2"/>
+  <!-- Schnurrhaare -->
+  <g stroke="#ffe6f1" stroke-width="8" stroke-linecap="round">
+    <path d="M216 336 L150 326"/><path d="M216 350 L152 360"/>
+    <path d="M296 336 L362 326"/><path d="M296 350 L360 360"/>
+  </g>
+</svg>
