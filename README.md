@@ -35,7 +35,7 @@ src/core/            reine Spiellogik, testbar ohne Browser
   combo.ts           Combo-Zähler
   scoring.ts         Punkteformel
   generator.ts       fairer Stein-Generator (Füllgrad-Gewichtung, Gap-Assist, Lösbarkeits-Check)
-  game.ts            Spielzustand, Züge, Revive
+  game.ts            Spielzustand, Züge
   rng.ts             seedbarer Zufall
 src/state/storage.ts Speichern/Laden (localStorage)
 src/ui/sound.ts      synthetisierte Sounds + Vibration

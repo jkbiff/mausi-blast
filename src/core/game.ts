@@ -1,4 +1,4 @@
-import { BOARD_SIZE as N, COLOR_COUNT, REVIVE_CLEAR_ROWS, TRAY_SIZE } from "../config";
+import { BOARD_SIZE as N, COLOR_COUNT, TRAY_SIZE } from "../config";
 import { canPlace, emptyBoard, hasAnyMove, isEmpty, place, type Board } from "./board";
 import { updateCombo } from "./combo";
 import { generateTray } from "./generator";
@@ -21,7 +21,6 @@ export interface GameState {
   missStreak: number;
   /** Anzahl bisher ausgeteilter Trays. */
   dealRound: number;
-  reviveUsed: boolean;
   gameOver: boolean;
   rngState: number;
 }
@@ -66,7 +65,6 @@ export function newGame(seed: number): GameState {
     combo: 0,
     missStreak: 0,
     dealRound: 0,
-    reviveUsed: false,
     gameOver: false,
     rngState: seed >>> 0,
   };
@@ -124,32 +122,6 @@ export function playMove(prev: GameState, slot: number, row: number, col: number
     allClear: isAllClearBonus(emptyAfter, lines, prev.dealRound),
     dealtNewTray,
   };
-}
-
-export function canRevive(state: GameState): boolean {
-  return state.gameOver && !state.reviveUsed;
-}
-
-/** Gratis-Revive: die vollsten Zeilen leeren, Score bleibt, Combo resettet, neuer Tray. */
-export function revive(prev: GameState): { state: GameState; clearedCells: number[] } {
-  if (!canRevive(prev)) throw new Error("Revive nicht möglich");
-  const board = prev.board.slice();
-  const rows = [...Array(N).keys()]
-    .map((r) => ({ r, filled: board.slice(r * N, r * N + N).filter(Boolean).length }))
-    .sort((a, b) => b.filled - a.filled)
-    .slice(0, REVIVE_CLEAR_ROWS);
-  const clearedCells: number[] = [];
-  for (const { r } of rows) {
-    for (let c = 0; c < N; c++) {
-      const i = r * N + c;
-      if (board[i]) clearedCells.push(i);
-      board[i] = 0;
-    }
-  }
-  const state: GameState = { ...prev, board, combo: 0, missStreak: 0, reviveUsed: true, gameOver: false };
-  dealInto(state, new Rng(state.rngState));
-  state.gameOver = !hasAnyMove(state.board, trayPieces(state));
-  return { state, clearedCells };
 }
 
 export function isValidState(s: unknown): s is GameState {

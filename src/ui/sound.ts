@@ -79,11 +79,6 @@ export function playGameOver(): void {
   [7, 4, 0, -5].forEach((s, i) => tone(semis(392, s), i * 0.16, 0.3, "sine", 0.18));
 }
 
-export function playRevive(): void {
-  if (!ready()) return;
-  [0, 7, 12].forEach((s, i) => tone(semis(440, s), i * 0.09, 0.25, "sine", 0.16));
-}
-
 let hapticsEnabled = true;
 
 export function setHapticsEnabled(on: boolean): void {

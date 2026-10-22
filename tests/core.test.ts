@@ -4,7 +4,7 @@ import {
 } from "../src/core/board";
 import { comboLabel, praiseLabel, updateCombo, type ComboState } from "../src/core/combo";
 import { findGapBars, generateTray, pieceWeight } from "../src/core/generator";
-import { canRevive, newGame, playMove, revive, type GameState } from "../src/core/game";
+import { newGame, playMove, type GameState } from "../src/core/game";
 import { getPiece, PIECES } from "../src/core/pieces";
 import { Rng } from "../src/core/rng";
 import { linePoints, scoreMove } from "../src/core/scoring";
@@ -27,7 +27,6 @@ function stateWith(board: Board, tray: string[], extra: Partial<GameState> = {})
     combo: 0,
     missStreak: 0,
     dealRound: 1,
-    reviveUsed: false,
     gameOver: false,
     rngState: 42,
     ...extra,
@@ -214,20 +213,13 @@ describe("Spielzüge (playMove)", () => {
     expect(r.state.dealRound).toBe(2);
   });
 
-  it("Game Over, wenn kein verbleibender Stein passt; Revive einmal möglich", () => {
+  it("Game Over, wenn kein verbleibender Stein passt", () => {
     // Schachbrett: kein 2×2 passt irgendwo, der 1×1 schließt keine Linie.
     const rows = Array.from({ length: 8 }, (_, r) => (r % 2 ? ".X.X.X.X" : "X.X.X.X."));
     const s0 = stateWith(boardFrom(rows), ["1x1", "2x2", "2x2"]);
     const r = playMove(s0, 0, 0, 1);
     expect(r.linesCleared).toBe(0);
     expect(r.state.gameOver).toBe(true);
-    expect(canRevive(r.state)).toBe(true);
-    const rv = revive(r.state);
-    expect(rv.state.gameOver).toBe(false);
-    expect(rv.state.reviveUsed).toBe(true);
-    expect(rv.state.score).toBe(r.state.score);
-    expect(rv.state.combo).toBe(0);
-    expect(canRevive({ ...rv.state, gameOver: true })).toBe(false);
   });
 
   it("neues Spiel ist deterministisch per Seed", () => {

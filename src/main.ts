@@ -2,7 +2,7 @@ import "./styles.css";
 import { BOARD_SIZE as N, COMBO_MISS_LIMIT, TRAY_SIZE } from "./config";
 import { canPlace, canPlaceAnywhere, place } from "./core/board";
 import { praiseLabel } from "./core/combo";
-import { canRevive, newGame, playMove, revive, type GameState, type MoveResult } from "./core/game";
+import { newGame, playMove, type GameState, type MoveResult } from "./core/game";
 import { getPiece, type Piece } from "./core/pieces";
 import { randomSeed } from "./core/rng";
 import * as store from "./state/storage";
@@ -15,6 +15,7 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
 const boardWrap = $("board-wrap");
 const boardEl = $("board");
 const fxEl = $("fx");
+const noSpaceEl = $("no-space");
 const scoreGem = $("score-gem");
 const trayEl = $("tray");
 const scoreEl = $("score");
@@ -43,8 +44,8 @@ let recordCelebrated = bestAtStart > 0 && state.score > bestAtStart;
 let settings = store.loadSettings();
 let shownScore = state.score;
 let gameOverTimer = 0;
-/** Blöcke grau färben, sobald das Game Over feststeht. */
-let showDead = state.gameOver;
+/** Beim Game Over werden die leeren Felder mit bunten Blöcken aufgefüllt (Feld → Farbe). */
+let deadFill: Map<number, number> | null = null;
 
 sfx.setSoundEnabled(settings.sound);
 sfx.setHapticsEnabled(settings.haptics);
@@ -58,8 +59,8 @@ const cells: HTMLDivElement[] = [];
 for (let i = 0; i < N * N; i++) {
   const d = document.createElement("div");
   d.className = "cell";
-  // Verzögerung für das zeilenweise Ergrauen beim Game Over
-  d.style.setProperty("--d", `${Math.floor(i / N) * 70}ms`);
+  // Verzögerung für das Auffüllen beim Game Over (von oben nach unten, ca. 0,3 s)
+  d.style.setProperty("--d", `${Math.floor(i / N) * 35 + (i % N) * 4}ms`);
   // Position für den Bildausschnitt im Foto-Design
   d.style.setProperty("--row", String(Math.floor(i / N)));
   d.style.setProperty("--col", String(i % N));
@@ -119,7 +120,11 @@ function renderBoard(o: BoardOverlay = {}): void {
     let cls = "cell";
     let color = v;
     if (v) cls += " filled";
-    if (v && showDead) cls += " dead";
+    const fill = !v ? deadFill?.get(i) : undefined;
+    if (fill) {
+      cls += " filled fill-in";
+      color = fill;
+    }
     if (ghost.has(i)) {
       cls += " ghost";
       color = o.color!;
@@ -338,23 +343,31 @@ function allClearSequence(res: MoveResult, color: number): void {
   window.setTimeout(() => boardWrap.classList.remove("neon"), 3800);
 }
 
+/** Wie im Original: Band „Kein Platz mehr“ über dem Tray, leere Felder füllen sich bunt, dann das Ergebnis. */
+function showNoSpace(): void {
+  deadFill = new Map();
+  state.board.forEach((v, i) => {
+    if (!v) deadFill!.set(i, 1 + Math.floor(Math.random() * 8));
+  });
+  renderBoard();
+  noSpaceEl.classList.remove("hidden");
+  boardWrap.classList.remove("combo-hot");
+}
+
 function scheduleGameOver(): void {
   window.clearTimeout(gameOverTimer);
   gameOverTimer = window.setTimeout(() => {
-    // Erst ergrauen die Blöcke zeilenweise, dann kommt der Game-Over-Dialog.
-    showDead = true;
-    renderBoard();
+    showNoSpace();
     sfx.playGameOver();
     sfx.vibrate([60, 60, 120]);
-    gameOverTimer = window.setTimeout(showGameOver, 900);
-  }, 500);
+    gameOverTimer = window.setTimeout(showGameOver, 2200);
+  }, 450);
 }
 
 function showGameOver(): void {
   $("go-score").textContent = String(state.score);
   $("go-best").textContent = String(best);
   $("go-record").classList.toggle("hidden", !(state.score > bestAtStart && state.score > 0));
-  $("btn-revive").classList.toggle("hidden", !canRevive(state));
   gameOverEl.classList.remove("hidden");
 }
 
@@ -364,7 +377,8 @@ function startNewGame(): void {
   bestAtStart = best;
   store.saveRoundBest(bestAtStart);
   recordCelebrated = false;
-  showDead = false;
+  deadFill = null;
+  noSpaceEl.classList.add("hidden");
   shownScore = 0;
   store.saveGame(state);
   gameOverEl.classList.add("hidden");
@@ -374,28 +388,6 @@ function startNewGame(): void {
   renderComboMeter();
   renderTray(true);
   animateScore();
-}
-
-function doRevive(): void {
-  if (!canRevive(state)) return;
-  const before = state.board;
-  const res = revive(state);
-  state = res.state;
-  store.saveGame(state);
-  showDead = false;
-  gameOverEl.classList.add("hidden");
-  if (res.clearedCells.length) {
-    const rows = [...new Set(res.clearedCells.map((i) => Math.floor(i / N)))];
-    fx.shatter(res.clearedCells, (i) => String(before[i]), rows, res.clearedCells);
-    fx.streaks(rows, []);
-  }
-  renderBoard();
-  renderComboMeter();
-  renderTray(true);
-  fx.banner([fx.text3d("Weiter geht's!", "cyan")]);
-  sfx.playRevive();
-  sfx.vibrate([20, 40, 20]);
-  if (state.gameOver) scheduleGameOver();
 }
 
 // ---------- Drag & Drop ----------
@@ -523,7 +515,6 @@ window.addEventListener("pointercancel", (e) => {
 
 // ---------- Menüs ----------
 
-$("btn-revive").addEventListener("click", doRevive);
 $("btn-restart").addEventListener("click", startNewGame);
 
 $("btn-settings").addEventListener("click", () => {
@@ -670,7 +661,10 @@ renderTray(true);
 setBest();
 renderComboMeter();
 scoreEl.textContent = String(state.score);
-if (state.gameOver) showGameOver();
+if (state.gameOver) {
+  showNoSpace();
+  showGameOver();
+}
 
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", () => {

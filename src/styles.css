@@ -282,9 +282,11 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
   to { opacity: 0; }
 }
 
-.cell.filled.dead {
-  filter: grayscale(1) brightness(0.55);
-  transition: filter 0.25s ease-out var(--d, 0s);
+/* Game Over: leere Felder füllen sich von oben nach unten mit bunten Blöcken */
+.cell.fill-in { animation: fill-in 0.16s ease-out var(--d, 0s) both; }
+@keyframes fill-in {
+  from { transform: scale(0.4); opacity: 0; }
+  to { transform: none; opacity: 1; }
 }
 
 /* ---------- Effekte auf dem Spielfeld ---------- */
@@ -620,6 +622,7 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
 
 /* ---------- Tray ---------- */
 .tray {
+  position: relative;
   width: var(--board);
   flex: none;
   height: calc(var(--board) * 0.4);
@@ -638,6 +641,25 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
   touch-action: none;
 }
 .slot.lifted .piece { visibility: hidden; }
+/* Band „Kein Platz mehr“ quer über den ganzen Bildschirm */
+.no-space {
+  position: absolute;
+  z-index: 5;
+  left: calc(50% - 50vw);
+  top: 50%;
+  width: 100vw;
+  height: 76px;
+  margin-top: -38px;
+  display: grid;
+  place-items: center;
+  background: rgba(15, 12, 30, 0.72);
+  color: #fff;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+  animation: fade-in 0.25s ease-out;
+}
 .slot.disabled .piece { opacity: 0.35; filter: grayscale(0.9); }
 .slot.deal .piece { animation: deal 0.22s cubic-bezier(0.3, 1.4, 0.5, 1) backwards; }
 @keyframes deal {

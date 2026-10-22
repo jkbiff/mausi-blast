@@ -41,8 +41,5 @@ export const GENERATOR = {
   solverNodeBudget: 60000,
 };
 
-// Revive
-export const REVIVE_CLEAR_ROWS = 3;
-
 // Darstellung: Anzahl Steinfarben (Farbe hat keine Spielbedeutung).
 export const COLOR_COUNT = 8;
