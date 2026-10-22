@@ -29,7 +29,6 @@ export const SKINS: readonly SkinInfo[] = [
   { id: "blasen", name: "Blasen", preview: 3 },
   { id: "ziegel", name: "Ziegel", preview: 8 },
   { id: "pastell", name: "Pastell", preview: 5 },
-  { id: "mix", name: "Mix", preview: 1 },
   { id: "foto", name: "Foto", preview: 1 },
 ];
 
