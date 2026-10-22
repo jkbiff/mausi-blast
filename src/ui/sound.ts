@@ -68,6 +68,12 @@ export function playAllClear(): void {
   [0, 4, 7, 12, 16, 19, 24].forEach((s, i) => tone(semis(523.25, s), i * 0.07, 0.35, "triangle", 0.16));
 }
 
+export function playRecord(): void {
+  if (!ready()) return;
+  [0, 4, 7, 12].forEach((s, i) => tone(semis(659.25, s), i * 0.1, 0.3, "square", 0.06));
+  tone(semis(659.25, 12), 0.4, 0.5, "triangle", 0.14);
+}
+
 export function playGameOver(): void {
   if (!ready()) return;
   [7, 4, 0, -5].forEach((s, i) => tone(semis(392, s), i * 0.16, 0.3, "sine", 0.18));

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   canPlace, emptyBoard, findFullLines, hasAnyMove, idx, isTraySolvable, place, type Board,
 } from "../src/core/board";
-import { comboLabel, updateCombo, type ComboState } from "../src/core/combo";
+import { comboLabel, praiseLabel, updateCombo, type ComboState } from "../src/core/combo";
 import { findGapBars, generateTray, pieceWeight } from "../src/core/generator";
 import { canRevive, newGame, playMove, revive, type GameState } from "../src/core/game";
 import { getPiece, PIECES } from "../src/core/pieces";
@@ -110,6 +110,10 @@ describe("Combo", () => {
   it("Label erst ab C = 2", () => {
     expect(comboLabel(1)).toBeNull();
     expect(comboLabel(3)).toBe("Combo ×3");
+  });
+
+  it("Lobtexte steigen mit der Anzahl Linien", () => {
+    expect([1, 2, 3, 4, 5, 6, 7].map(praiseLabel)).toEqual([null, "Gut!", "Super!", "Mega!", "Fantastisch!", "Unglaublich!", "Unglaublich!"]);
   });
 });
 

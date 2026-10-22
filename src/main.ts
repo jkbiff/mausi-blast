@@ -1,7 +1,7 @@
 import "./styles.css";
-import { BOARD_SIZE as N, TRAY_SIZE } from "./config";
+import { BOARD_SIZE as N, COMBO_MISS_LIMIT, TRAY_SIZE } from "./config";
 import { canPlace, canPlaceAnywhere, place } from "./core/board";
-import { comboLabel } from "./core/combo";
+import { comboLabel, praiseLabel } from "./core/combo";
 import { canRevive, newGame, playMove, revive, type GameState } from "./core/game";
 import { getPiece, type Piece } from "./core/pieces";
 import { randomSeed } from "./core/rng";
@@ -21,19 +21,29 @@ const settingsEl = $("overlay-settings");
 const soundOpt = $<HTMLInputElement>("opt-sound");
 const hapticsOpt = $<HTMLInputElement>("opt-haptics");
 const newGameBtn = $("btn-newgame");
+const comboMeter = $("combo-meter");
+const comboMeterText = $("combo-meter-text");
+const skinsEl = $("skins");
+const skinCycleOpt = $<HTMLInputElement>("opt-skin-cycle");
 
 // ---------- Zustand ----------
 
 let state: GameState = store.loadGame() ?? newGame(randomSeed());
 let best = Math.max(store.loadBest(), state.score);
 /** Rekord zu Beginn der Runde – für „Neuer Rekord!“. */
-let bestAtStart = store.loadBest();
+let bestAtStart = store.loadRoundBest() ?? store.loadBest();
+store.saveRoundBest(bestAtStart);
+/** „Neuer Rekord!“ wird pro Runde nur einmal gefeiert. */
+let recordCelebrated = bestAtStart > 0 && state.score > bestAtStart;
 let settings = store.loadSettings();
 let shownScore = state.score;
 let gameOverTimer = 0;
+/** Blöcke grau färben, sobald das Game Over feststeht. */
+let showDead = state.gameOver;
 
 sfx.setSoundEnabled(settings.sound);
 sfx.setHapticsEnabled(settings.haptics);
+document.body.dataset.skin = settings.skin;
 
 // ---------- DOM-Aufbau ----------
 
@@ -41,6 +51,8 @@ const cells: HTMLDivElement[] = [];
 for (let i = 0; i < N * N; i++) {
   const d = document.createElement("div");
   d.className = "cell";
+  // Verzögerung für das zeilenweise Ergrauen beim Game Over
+  d.style.setProperty("--d", `${Math.floor(i / N) * 70}ms`);
   boardEl.appendChild(d);
   cells.push(d);
 }
@@ -89,6 +101,7 @@ function renderBoard(o: BoardOverlay = {}): void {
     let cls = "cell";
     let color = v;
     if (v) cls += " filled";
+    if (v && showDead) cls += " dead";
     if (ghost.has(i)) {
       cls += " ghost";
       color = o.color!;
@@ -151,6 +164,31 @@ function setBest(): void {
     store.saveBest(best);
   }
   bestEl.textContent = String(best);
+  if (!recordCelebrated && bestAtStart > 0 && state.score > bestAtStart) {
+    recordCelebrated = true;
+    window.setTimeout(() => {
+      banner([["praise", "Neuer Rekord!"]], "record");
+      bestEl.parentElement!.classList.add("record");
+      window.setTimeout(() => bestEl.parentElement!.classList.remove("record"), 1900);
+      sfx.playRecord();
+      sfx.vibrate([20, 40, 20, 40, 20]);
+    }, 900);
+  }
+}
+
+function renderComboMeter(bump = false): void {
+  const active = state.combo >= 2 && !state.gameOver;
+  comboMeter.classList.toggle("hidden", !active);
+  if (!active) return;
+  comboMeterText.textContent = `Combo ×${state.combo}`;
+  // Leuchtende Punkte = Züge, die die Combo ohne Clear noch überlebt.
+  const left = COMBO_MISS_LIMIT - state.missStreak;
+  comboMeter.querySelectorAll("i").forEach((dot, k) => dot.classList.toggle("on", k < left));
+  if (bump) {
+    comboMeter.classList.remove("bump");
+    void comboMeter.offsetWidth;
+    comboMeter.classList.add("bump");
+  }
 }
 
 let scoreAnim = 0;
@@ -198,8 +236,34 @@ function spawn(el: HTMLElement, ttl: number): void {
   window.setTimeout(() => el.remove(), ttl);
 }
 
+/** Lichtstrahl, der durch jede geschaffte Zeile/Spalte fegt. */
+function beams(rows: number[], cols: number[], color: number): void {
+  const line = (from: number, to: number, cls: string) => {
+    const a = cellRect(from);
+    const b = cellRect(to);
+    const d = document.createElement("div");
+    d.className = `beam ${cls}`;
+    d.dataset.c = String(color);
+    Object.assign(d.style, {
+      left: `${a.x}px`,
+      top: `${a.y}px`,
+      width: `${b.x + b.w - a.x}px`,
+      height: `${b.y + b.h - a.y}px`,
+    });
+    spawn(d, 420);
+  };
+  for (const r of rows) line(r * N, r * N + N - 1, "row");
+  for (const c of cols) line(c, (N - 1) * N + c, "col");
+}
+
+function flash(): void {
+  const f = document.createElement("div");
+  f.className = "flash";
+  spawn(f, 480);
+}
+
 /** Zellen leuchten auf und poppen als Welle vom Ablageort weg. */
-function clearEffect(indices: number[], colorOf: (i: number) => number, origin: number[]): void {
+function clearEffect(indices: number[], colorOf: (i: number) => number, origin: number[], sparksPerCell = 1): void {
   const or = origin.reduce((s, i) => s + Math.floor(i / N), 0) / origin.length;
   const oc = origin.reduce((s, i) => s + (i % N), 0) / origin.length;
   for (const i of indices) {
@@ -217,7 +281,7 @@ function clearEffect(indices: number[], colorOf: (i: number) => number, origin: 
       animationDelay: `${delay}ms`,
     });
     spawn(d, 400 + delay);
-    sparks(r.x + r.w / 2, r.y + r.h / 2, colorOf(i), 1, delay);
+    sparks(r.x + r.w / 2, r.y + r.h / 2, colorOf(i), sparksPerCell, delay, 60 + sparksPerCell * 20);
   }
 }
 
@@ -249,12 +313,18 @@ function popup(text: string, at: { x: number; y: number }): void {
   spawn(p, 950);
 }
 
-function banner(text: string, variant = ""): void {
-  fxEl.querySelectorAll(".banner").forEach((b) => b.remove());
+/** Großer Text über dem Feld; jede Zeile ist [CSS-Klasse, Text]. */
+function banner(lines: [string, string][], variant = ""): void {
+  fxEl.querySelectorAll(`.banner${variant === "record" ? ".record" : ":not(.record)"}`).forEach((b) => b.remove());
   const b = document.createElement("div");
   b.className = `banner ${variant}`;
-  b.textContent = text;
-  spawn(b, variant === "allclear" ? 1850 : 1050);
+  for (const [cls, text] of lines) {
+    const span = document.createElement("span");
+    span.className = cls;
+    span.textContent = text;
+    b.appendChild(span);
+  }
+  spawn(b, variant === "allclear" ? 1850 : 1150);
 }
 
 function shake(): void {
@@ -267,7 +337,6 @@ function shake(): void {
 
 function commitMove(slot: number, row: number, col: number): void {
   const item = state.tray[slot]!;
-  const before = state.board;
   const res = playMove(state, slot, row, col);
   state = res.state;
   store.saveGame(state);
@@ -275,19 +344,25 @@ function commitMove(slot: number, row: number, col: number): void {
   renderBoard({ placed: res.placedCells });
 
   if (res.linesCleared > 0) {
-    const placed = new Set(res.placedCells);
-    clearEffect(res.clearedCells, (i) => (placed.has(i) ? item.color : before[i]), res.placedCells);
+    // Wie bei Block Blast: die geschafften Linien nehmen die Farbe des gelegten Steins an.
+    clearEffect(res.clearedCells, () => item.color, res.placedCells, res.linesCleared >= 2 ? 2 : 1);
+    beams(res.clearedRows, res.clearedCols, item.color);
+    if (res.linesCleared >= 2) flash();
     popup(`+${res.points}`, centroid(res.clearedCells));
-    const label = comboLabel(res.combo);
+    const praise = praiseLabel(res.linesCleared);
+    const combo = comboLabel(res.combo);
     if (res.allClear) {
-      banner("Alles weg! +300", "allclear");
+      banner([["praise", "Alles weg!"], ["sub", "+300"]], "allclear");
+      if (settings.skinCycle) window.setTimeout(nextSkin, 700);
       const c = centroid(res.clearedCells);
       for (let k = 1; k <= 8; k++) sparks(c.x, c.y, k, 6, 0, 160);
       sfx.playAllClear();
       sfx.vibrate([30, 40, 30, 40, 80]);
     } else {
-      if (label) banner(label);
-      else if (res.linesCleared >= 3) banner("Wow!");
+      const lines: [string, string][] = [];
+      if (praise) lines.push(["praise", praise]);
+      if (combo) lines.push([praise ? "sub" : "praise", combo]);
+      if (lines.length) banner(lines, `t${Math.min(res.linesCleared, 6)}`);
       sfx.playClear(res.linesCleared, res.combo);
       sfx.vibrate(res.linesCleared > 1 ? [20, 30, 35] : 25);
     }
@@ -299,6 +374,7 @@ function commitMove(slot: number, row: number, col: number): void {
 
   setBest();
   animateScore();
+  renderComboMeter(res.linesCleared > 0);
   renderTray(res.dealtNewTray);
   if (state.gameOver) scheduleGameOver();
 }
@@ -306,10 +382,13 @@ function commitMove(slot: number, row: number, col: number): void {
 function scheduleGameOver(): void {
   window.clearTimeout(gameOverTimer);
   gameOverTimer = window.setTimeout(() => {
+    // Erst ergrauen die Blöcke zeilenweise, dann kommt der Game-Over-Dialog.
+    showDead = true;
+    renderBoard();
     sfx.playGameOver();
     sfx.vibrate([60, 60, 120]);
-    showGameOver();
-  }, 750);
+    gameOverTimer = window.setTimeout(showGameOver, 900);
+  }, 500);
 }
 
 function showGameOver(): void {
@@ -324,12 +403,16 @@ function startNewGame(): void {
   window.clearTimeout(gameOverTimer);
   state = newGame(randomSeed());
   bestAtStart = best;
+  store.saveRoundBest(bestAtStart);
+  recordCelebrated = false;
+  showDead = false;
   shownScore = 0;
   store.saveGame(state);
   gameOverEl.classList.add("hidden");
   settingsEl.classList.add("hidden");
   fxEl.replaceChildren();
   renderBoard();
+  renderComboMeter();
   renderTray(true);
   animateScore();
 }
@@ -340,11 +423,13 @@ function doRevive(): void {
   const res = revive(state);
   state = res.state;
   store.saveGame(state);
+  showDead = false;
   gameOverEl.classList.add("hidden");
   if (res.clearedCells.length) clearEffect(res.clearedCells, (i) => before[i], res.clearedCells);
   renderBoard();
+  renderComboMeter();
   renderTray(true);
-  banner("Weiter geht's!");
+  banner([["praise", "Weiter geht's!"]]);
   sfx.playRevive();
   sfx.vibrate([20, 40, 20]);
   if (state.gameOver) scheduleGameOver();
@@ -476,6 +561,8 @@ $("btn-settings").addEventListener("click", () => {
   sfx.unlockAudio();
   soundOpt.checked = settings.sound;
   hapticsOpt.checked = settings.haptics;
+  skinCycleOpt.checked = settings.skinCycle;
+  renderSkins();
   newGameBtn.textContent = "Neues Spiel";
   newGameBtn.classList.remove("danger");
   settingsEl.classList.remove("hidden");
@@ -497,8 +584,35 @@ newGameBtn.addEventListener("click", () => {
   startNewGame();
 });
 
+function applySkin(skin: store.Skin): void {
+  settings = { ...settings, skin };
+  store.saveSettings(settings);
+  document.body.dataset.skin = skin;
+  renderSkins();
+}
+
+/** Belohnung für „Alles weg!“: das nächste Blockdesign. */
+function nextSkin(): void {
+  applySkin(store.SKINS[(store.SKINS.indexOf(settings.skin) + 1) % store.SKINS.length]);
+  boardEl.classList.remove("skin-swap");
+  void boardEl.offsetWidth;
+  boardEl.classList.add("skin-swap");
+}
+
+function renderSkins(): void {
+  skinsEl.querySelectorAll<HTMLButtonElement>("button").forEach((b) => b.classList.toggle("active", b.dataset.skin === settings.skin));
+}
+
+skinsEl.addEventListener("click", (e) => {
+  const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-skin]");
+  const skin = btn?.dataset.skin as store.Skin | undefined;
+  if (!skin || !store.SKINS.includes(skin)) return;
+  applySkin(skin);
+  sfx.playPickup();
+});
+
 function updateSettings(): void {
-  settings = { sound: soundOpt.checked, haptics: hapticsOpt.checked };
+  settings = { ...settings, sound: soundOpt.checked, haptics: hapticsOpt.checked, skinCycle: skinCycleOpt.checked };
   store.saveSettings(settings);
   sfx.setSoundEnabled(settings.sound);
   sfx.setHapticsEnabled(settings.haptics);
@@ -507,6 +621,7 @@ function updateSettings(): void {
 }
 soundOpt.addEventListener("change", updateSettings);
 hapticsOpt.addEventListener("change", updateSettings);
+skinCycleOpt.addEventListener("change", updateSettings);
 
 // ---------- Start ----------
 
@@ -518,6 +633,7 @@ layout();
 renderBoard();
 renderTray(true);
 setBest();
+renderComboMeter();
 scoreEl.textContent = String(state.score);
 if (state.gameOver) showGameOver();
 
