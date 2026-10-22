@@ -42,6 +42,7 @@ store.saveRoundBest(bestAtStart);
 /** „Neuer Rekord!“ wird pro Runde nur einmal gefeiert. */
 let recordCelebrated = bestAtStart > 0 && state.score > bestAtStart;
 let settings = store.loadSettings();
+let stats = store.loadStats();
 let shownScore = state.score;
 let gameOverTimer = 0;
 /** Beim Game Over werden die leeren Felder mit bunten Blöcken aufgefüllt (Feld → Farbe). */
@@ -283,6 +284,7 @@ function commitMove(slot: number, row: number, col: number): void {
   const res = playMove(state, slot, row, col);
   state = res.state;
   store.saveGame(state);
+  updateStats(res);
 
   renderBoard({ placed: res.placedCells });
   fx.placeSparkles(res.placedCells);
@@ -301,7 +303,8 @@ function commitMove(slot: number, row: number, col: number): void {
     if (res.linesCleared === 1) {
       if (res.combo < 2) fx.heartPraise(res.clearedRows, res.clearedCols);
     } else {
-      if (res.linesCleared >= 4) parts.push(fx.text3d(praiseLabel(res.linesCleared)!, praiseVariant(res.linesCleared)));
+      // Lob wie auf block-blast.gg: 2 Good, 3 Great, 4 Excellent, 5+ Fantastic
+      parts.push(fx.text3d(praiseLabel(res.linesCleared)!, praiseVariant(res.linesCleared)));
       parts.push(...fx.linesContent(res.linesCleared));
     }
     if (res.combo >= 2) parts.push(...fx.comboContent(res.combo));
@@ -385,7 +388,20 @@ function scheduleGameOver(): void {
   }, 450);
 }
 
+function updateStats(res: MoveResult): void {
+  const next = {
+    bestCombo: Math.max(stats.bestCombo, res.combo),
+    allClears: stats.allClears + (res.allClear ? 1 : 0),
+  };
+  if (next.bestCombo !== stats.bestCombo || next.allClears !== stats.allClears) {
+    stats = next;
+    store.saveStats(stats);
+  }
+}
+
 function showGameOver(): void {
+  $("go-best-combo").textContent = String(stats.bestCombo);
+  $("go-all-clears").textContent = String(stats.allClears);
   $("go-score").textContent = String(state.score);
   $("go-best").textContent = String(best);
   $("go-record").classList.toggle("hidden", !(state.score > bestAtStart && state.score > 0));

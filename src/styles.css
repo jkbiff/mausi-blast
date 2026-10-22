@@ -848,7 +848,8 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
 .go-score { font-size: 54px; font-weight: 900; line-height: 1.1; }
 .go-record { color: var(--accent-2); font-weight: 900; font-size: 20px; margin: 4px 0; animation: pulse 0.8s ease-in-out infinite alternate; }
 @keyframes pulse { to { transform: scale(1.08); } }
-.go-best { color: var(--muted); margin: 6px 0 18px; font-weight: 700; }
+.go-best { color: var(--muted); margin: 6px 0 4px; font-weight: 700; }
+.go-stats { color: var(--muted); margin: 0 0 18px; font-size: 14px; font-weight: 700; }
 .hidden { display: none !important; }
 
 .btn {

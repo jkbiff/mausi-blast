@@ -6,8 +6,8 @@ export const TRAY_SIZE = 3;
 // Punkte
 export const POINTS_PER_LINE = 10;
 export const ALL_CLEAR_BONUS = 300;
-/** All-Clear-Bonus gibt es erst ab dieser Anzahl ausgeteilter Trays. */
-export const ALL_CLEAR_MIN_DEAL_ROUND = 6;
+/** Höchster Combo-Multiplikator für Linienpunkte; die Combo-Stufe zählt darüber hinaus weiter. */
+export const MAX_COMBO_MULTIPLIER = 8;
 
 // Combo: so viele Platzierungen ohne Clear in Folge setzen die Combo zurück.
 export const COMBO_MISS_LIMIT = 3;

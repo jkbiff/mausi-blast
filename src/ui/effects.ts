@@ -202,7 +202,7 @@ export function linesContent(lines: number): HTMLElement[] {
 /** „Farbe weg!“ oben im Feld mit buntem Funkenregen. */
 export function colorGone(): void {
   const base = fx.getBoundingClientRect();
-  const at = { x: base.width * 0.5, y: base.height * 0.22 };
+  const at = { x: base.width * 0.5, y: base.height * 0.07 };
   const el = div("color-gone", { left: `${at.x}px`, top: `${at.y}px` });
   el.appendChild(text3d("Color Gone!", "rose"));
   spawn(el, 1300);

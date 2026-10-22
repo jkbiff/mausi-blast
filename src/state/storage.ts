@@ -6,6 +6,19 @@ const KEY_BEST = "mausi-blast:best";
 const KEY_SETTINGS = "mausi-blast:settings";
 const KEY_ROUND_BEST = "mausi-blast:best-at-round-start";
 const KEY_PHOTO = "mausi-blast:photo";
+const KEY_STATS = "mausi-blast:stats";
+
+/** Statistik über alle Runden. */
+export interface Stats {
+  bestCombo: number;
+  allClears: number;
+}
+
+export function loadStats(): Stats {
+  return { bestCombo: 0, allClears: 0, ...read<Partial<Stats>>(KEY_STATS) };
+}
+
+export const saveStats = (s: Stats) => write(KEY_STATS, s);
 
 export interface Settings {
   sound: boolean;

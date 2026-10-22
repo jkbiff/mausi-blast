@@ -99,7 +99,6 @@ export function playMove(prev: GameState, slot: number, row: number, col: number
     linesCleared: lines,
     combo: comboState.combo,
     boardEmptyAfter: emptyAfter,
-    dealRound: prev.dealRound,
   });
   state.score += points;
 
@@ -119,7 +118,7 @@ export function playMove(prev: GameState, slot: number, row: number, col: number
     linesCleared: lines,
     points,
     combo: comboState.combo,
-    allClear: isAllClearBonus(emptyAfter, lines, prev.dealRound),
+    allClear: isAllClearBonus(emptyAfter, lines),
     dealtNewTray,
   };
 }
