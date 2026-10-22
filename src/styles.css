@@ -140,7 +140,9 @@ body {
 .cell { border-radius: 22%; background: var(--cell-empty); position: relative; }
 
 /* Blockdesigns als Variablen, damit auch die Vorschau im Menü ihr eigenes Design zeigt.
-   Jedes Design setzt alle Variablen; die Blockfarbe steckt in currentColor. */
+   Jedes Design setzt alle Variablen; die Blockfarbe steckt in currentColor.
+   Reihenfolge und Namen: src/ui/skins.ts */
+/* Glänzend (Standard) */
 :root,
 [data-skin="glanz"] {
   --blk-bg: currentColor;
@@ -150,6 +152,7 @@ body {
   --blk-deco: radial-gradient(13% 8% at 31% 22%, rgba(255, 255, 255, 0.6) 95%, transparent 100%);
   --blk-deco-inset: 0;
 }
+/* Mausgesichter */
 [data-skin="mausi"] {
   --blk-bg: currentColor;
   --blk-gloss: linear-gradient(170deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.18) 100%);
@@ -165,6 +168,7 @@ body {
     radial-gradient(15% 15% at 83% 15%, rgba(255, 255, 255, 0.45) 92%, transparent 100%);
   --blk-deco-inset: 0;
 }
+/* Sanft und flach */
 [data-skin="pastell"] {
   --blk-bg: currentColor;
   --blk-gloss: linear-gradient(rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.28));
@@ -182,7 +186,7 @@ body {
   --blk-deco: radial-gradient(closest-side, currentColor, transparent);
   --blk-deco-inset: 34%;
 }
-/* Holz: Farbe nur als Lasur, dazu Maserung und ein Astloch */
+/* Holz: Farbe als Lasur, Maserung und Astloch */
 [data-skin="holz"] {
   --blk-bg: color-mix(in srgb, currentColor 38%, #a5642c);
   --blk-gloss:
@@ -190,8 +194,7 @@ body {
     linear-gradient(180deg, rgba(255, 240, 210, 0.3), rgba(0, 0, 0, 0.18));
   --blk-shadow: inset 0 0 0 1.5px rgba(60, 30, 10, 0.45), inset 0 2px 0 rgba(255, 235, 200, 0.35), inset 0 -3px 0 rgba(40, 20, 5, 0.35), 0 2px 3px rgba(0, 0, 0, 0.3);
   --blk-radius: 12%;
-  --blk-deco:
-    radial-gradient(13% 9% at 70% 36%, rgba(60, 28, 8, 0.55) 55%, rgba(60, 28, 8, 0.2) 75%, transparent 100%);
+  --blk-deco: radial-gradient(13% 9% at 70% 36%, rgba(60, 28, 8, 0.55) 55%, rgba(60, 28, 8, 0.2) 75%, transparent 100%);
   --blk-deco-inset: 0;
 }
 /* Edelstein: Facetten außen, glänzende Tafel in der Mitte */
@@ -214,8 +217,261 @@ body {
   --blk-deco: radial-gradient(6% 6% at 78% 24%, #fff 70%, transparent 100%);
   --blk-deco-inset: 0;
 }
-/* Bonbon: Zuckerstreifen und Glanz */
+/* Bonbon: Zuckerstreifen */
 [data-skin="bonbon"] {
+  --blk-bg: currentColor;
+  --blk-gloss:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 40%),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.38) 0 4px, transparent 4px 9px);
+  --blk-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35), inset 0 -3px 0 rgba(0, 0, 0, 0.18), 0 2px 3px rgba(0, 0, 0, 0.25);
+  --blk-radius: 42%;
+  --blk-deco: none;
+  --blk-deco-inset: 0;
+}
+/* Gebürstetes Metall mit Nieten */
+[data-skin="metall"] {
+  --blk-bg: color-mix(in srgb, currentColor 45%, #b9bec7);
+  --blk-gloss:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0 1px, rgba(0, 0, 0, 0.06) 1px 2px, transparent 2px 4px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 45%, rgba(0, 0, 0, 0.28));
+  --blk-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5), inset 0 -3px 0 rgba(0, 0, 0, 0.3), 0 2px 3px rgba(0, 0, 0, 0.3);
+  --blk-radius: 10%;
+  --blk-deco:
+    radial-gradient(6% 6% at 15% 15%, #f4f6ff 45%, rgba(0, 0, 0, 0.45) 85%, transparent 100%),
+    radial-gradient(6% 6% at 85% 15%, #f4f6ff 45%, rgba(0, 0, 0, 0.45) 85%, transparent 100%),
+    radial-gradient(6% 6% at 15% 85%, #f4f6ff 45%, rgba(0, 0, 0, 0.45) 85%, transparent 100%),
+    radial-gradient(6% 6% at 85% 85%, #f4f6ff 45%, rgba(0, 0, 0, 0.45) 85%, transparent 100%);
+  --blk-deco-inset: 0;
+}
+/* Goldbarren mit leichtem Farbschimmer */
+[data-skin="gold"] {
+  --blk-bg: color-mix(in srgb, currentColor 22%, #f0b93a);
+  --blk-gloss: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.28) 50%, rgba(255, 255, 255, 0) 60%, rgba(90, 50, 0, 0.35) 100%);
+  --blk-shadow: inset 0 0 0 1.5px rgba(255, 240, 180, 0.8), inset 0 -3px 0 rgba(120, 70, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --blk-radius: 14%;
+  --blk-deco: radial-gradient(9% 9% at 74% 26%, #fff 35%, transparent 100%);
+  --blk-deco-inset: 0;
+}
+/* Lava: dunkles Gestein mit glühenden Rissen */
+[data-skin="lava"] {
+  --blk-bg: #2a1717;
+  --blk-gloss:
+    linear-gradient(118deg, transparent 38%, currentColor 40% 44%, transparent 46%),
+    linear-gradient(28deg, transparent 58%, currentColor 60% 63%, transparent 65%),
+    radial-gradient(circle at 28% 74%, currentColor 0 10%, transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.3));
+  --blk-shadow: inset 0 0 7px currentColor, inset 0 0 0 1px rgba(255, 255, 255, 0.12), 0 2px 3px rgba(0, 0, 0, 0.4);
+  --blk-radius: 18%;
+  --blk-deco: none;
+  --blk-deco-inset: 0;
+}
+/* Glas: durchsichtig mit farbigem Rand */
+[data-skin="glas"] {
+  --blk-bg: color-mix(in srgb, currentColor 40%, transparent);
+  --blk-gloss:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.55) 0 20%, rgba(255, 255, 255, 0) 21%),
+    linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1));
+  --blk-shadow: inset 0 0 0 2px currentColor, inset 0 0 12px rgba(255, 255, 255, 0.25);
+  --blk-radius: 18%;
+  --blk-deco: none;
+  --blk-deco-inset: 0;
+}
+/* Marmor mit Adern */
+[data-skin="marmor"] {
+  --blk-bg: color-mix(in srgb, currentColor 28%, #f3efe8);
+  --blk-gloss:
+    linear-gradient(125deg, transparent 30%, rgba(60, 50, 70, 0.22) 31% 33%, transparent 34% 62%, rgba(60, 50, 70, 0.15) 63% 64%, transparent 65%),
+    linear-gradient(35deg, transparent 45%, rgba(60, 50, 70, 0.18) 46% 47%, transparent 48%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 40%, rgba(0, 0, 0, 0.08));
+  --blk-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7), inset 0 -3px 0 rgba(0, 0, 0, 0.12), 0 2px 3px rgba(0, 0, 0, 0.25);
+  --blk-radius: 12%;
+  --blk-deco: none;
+  --blk-deco-inset: 0;
+}
+/* Gesprenkelter Stein */
+[data-skin="stein"] {
+  --blk-bg: color-mix(in srgb, currentColor 35%, #7d7a78);
+  --blk-gloss:
+    radial-gradient(rgba(0, 0, 0, 0.28) 18%, transparent 22%) 0 0 / 6px 6px,
+    radial-gradient(rgba(255, 255, 255, 0.22) 15%, transparent 20%) 3px 2px / 8px 8px,
+    linear-gradient(160deg, rgba(255, 255, 255, 0.25), rgba(0, 0, 0, 0.25));
+  --blk-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.25), inset -2px -3px 0 rgba(0, 0, 0, 0.35), 0 2px 3px rgba(0, 0, 0, 0.3);
+  --blk-radius: 24%;
+  --blk-deco: none;
+  --blk-deco-inset: 0;
+}
+/* Retro-Pixel */
+[data-skin="pixel"] {
+  --blk-bg: currentColor;
+  --blk-gloss: linear-gradient(transparent, transparent);
+  --blk-shadow: inset 3px 3px 0 rgba(255, 255, 255, 0.45), inset -3px -3px 0 rgba(0, 0, 0, 0.35);
+  --blk-radius: 0;
+  --blk-deco: linear-gradient(#fff, #fff) 24% 24% / 16% 16% no-repeat;
+  --blk-deco-inset: 0;
+}
+/* Galaxie: Nebel in der Blockfarbe mit Sternen */
+[data-skin="galaxie"] {
+  --blk-bg: #120b2e;
+  --blk-gloss:
+    radial-gradient(circle at 70% 75%, currentColor 0, transparent 60%),
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.22), transparent 40%),
+    radial-gradient(1.5px 1.5px at 30% 60%, #fff 99%, transparent),
+    radial-gradient(1px 1px at 62% 24%, #fff 99%, transparent),
+    radial-gradient(1.2px 1.2px at 82% 48%, #fff 99%, transparent);
+  --blk-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2), inset 0 0 8px currentColor, 0 2px 3px rgba(0, 0, 0, 0.35);
+  --blk-radius: 22%;
+  --blk-deco: none;
+  --blk-deco-inset: 0;
+}
+/* Herzchen */
+[data-skin="herzen"] {
+  --blk-bg: currentColor;
+  --blk-gloss: linear-gradient(150deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0) 45%, rgba(0, 0, 0, 0.2) 100%);
+  --blk-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), inset 0 -3px 0 rgba(0, 0, 0, 0.2), 0 2px 3px rgba(0, 0, 0, 0.25);
+  --blk-radius: 26%;
+  --blk-deco: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' fill-opacity='.75' d='M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z'/%3E%3C/svg%3E") center / 62% no-repeat;
+  --blk-deco-inset: 0;
+}
+/* Sternchen */
+[data-skin="sterne"] {
+  --blk-bg: currentColor;
+  --blk-gloss: linear-gradient(150deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0) 45%, rgba(0, 0, 0, 0.2) 100%);
+  --blk-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), inset 0 -3px 0 rgba(0, 0, 0, 0.2), 0 2px 3px rgba(0, 0, 0, 0.25);
+  --blk-radius: 22%;
+  --blk-deco: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' fill-opacity='.8' d='M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.8-6.2 3.8 1.6-7L2 9.2l7.1-.6z'/%3E%3C/svg%3E") center / 62% no-repeat;
+  --blk-deco-inset: 0;
+}
+/* Pfotenabdrücke */
+[data-skin="pfoten"] {
+  --blk-bg: currentColor;
+  --blk-gloss: linear-gradient(150deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0) 45%, rgba(0, 0, 0, 0.2) 100%);
+  --blk-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), inset 0 -3px 0 rgba(0, 0, 0, 0.2), 0 2px 3px rgba(0, 0, 0, 0.25);
+  --blk-radius: 30%;
+  --blk-deco: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='white' fill-opacity='.7'%3E%3Ccircle cx='6.5' cy='9' r='2.3'/%3E%3Ccircle cx='10.5' cy='5.5' r='2.4'/%3E%3Ccircle cx='15.5' cy='5.5' r='2.4'/%3E%3Ccircle cx='19' cy='9.5' r='2.2'/%3E%3Cellipse cx='12.5' cy='15.5' rx='5.2' ry='4.5'/%3E%3C/g%3E%3C/svg%3E") center / 62% no-repeat;
+  --blk-deco-inset: 0;
+}
+/* Käse – was sonst für eine Maus */
+[data-skin="kaese"] {
+  --blk-bg: color-mix(in srgb, currentColor 30%, #ffd45c);
+  --blk-gloss:
+    radial-gradient(14% 14% at 30% 35%, rgba(150, 95, 0, 0.35) 80%, transparent 100%),
+    radial-gradient(9% 9% at 70% 62%, rgba(150, 95, 0, 0.35) 80%, transparent 100%),
+    radial-gradient(6% 6% at 38% 76%, rgba(150, 95, 0, 0.3) 80%, transparent 100%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.4), rgba(0, 0, 0, 0.12));
+  --blk-shadow: inset 0 0 0 1px rgba(255, 240, 180, 0.6), inset 0 -3px 0 rgba(150, 95, 0, 0.3), 0 2px 3px rgba(0, 0, 0, 0.25);
+  --blk-radius: 12%;
+  --blk-deco: none;
+  --blk-deco-inset: 0;
+}
+/* Seifenblasen */
+[data-skin="blasen"] {
+  --blk-bg: color-mix(in srgb, currentColor 55%, transparent);
+  --blk-gloss: radial-gradient(circle at 50% 50%, transparent 55%, rgba(255, 255, 255, 0.35) 72%, rgba(255, 255, 255, 0.7) 76%, transparent 78%);
+  --blk-shadow: inset 0 0 10px rgba(255, 255, 255, 0.25);
+  --blk-radius: 50%;
+  --blk-deco: radial-gradient(14% 9% at 32% 26%, #fff 90%, transparent 100%);
+  --blk-deco-inset: 0;
+}
+/* Ziegelsteine */
+[data-skin="ziegel"] {
+  --blk-bg: color-mix(in srgb, currentColor 45%, #b5533c);
+  --blk-gloss:
+    linear-gradient(transparent 46%, rgba(40, 20, 10, 0.45) 46% 54%, transparent 54%),
+    linear-gradient(90deg, transparent 47%, rgba(40, 20, 10, 0.45) 47% 53%, transparent 53%) 0 0 / 100% 50% no-repeat,
+    linear-gradient(160deg, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0.2));
+  --blk-shadow: inset 0 0 0 1.5px rgba(40, 20, 10, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.2), 0 2px 3px rgba(0, 0, 0, 0.3);
+  --blk-radius: 6%;
+  --blk-deco: none;
+  --blk-deco-inset: 0;
+}
+/* Eigenes Foto: auf dem Spielfeld zeigt jeder Block seinen Bildausschnitt */
+[data-skin="foto"] {
+  --blk-bg: currentColor;
+  --blk-gloss: linear-gradient(150deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0) 45%, rgba(0, 0, 0, 0.2) 100%);
+  --blk-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --blk-radius: 14%;
+  --blk-deco: radial-gradient(13% 8% at 31% 22%, rgba(255, 255, 255, 0.6) 95%, transparent 100%);
+  --blk-deco-inset: 0;
+}
+/* Mix: jede Blockfarbe aus einem anderen Material */
+[data-skin="mix"] [data-c="1"]:not(.skins *),
+.skins [data-skin="mix"] [data-c="1"] {
+  --blk-bg: currentColor;
+  --blk-gloss: linear-gradient(150deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0) 45%, rgba(0, 0, 0, 0.2) 100%);
+  --blk-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), inset 0 -3px 0 rgba(0, 0, 0, 0.2), 0 2px 3px rgba(0, 0, 0, 0.25);
+  --blk-radius: 26%;
+  --blk-deco: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' fill-opacity='.75' d='M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z'/%3E%3C/svg%3E") center / 62% no-repeat;
+  --blk-deco-inset: 0;
+}
+[data-skin="mix"] [data-c="2"]:not(.skins *),
+.skins [data-skin="mix"] [data-c="2"] {
+  --blk-bg: #120b2e;
+  --blk-gloss:
+    radial-gradient(circle at 70% 75%, currentColor 0, transparent 60%),
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.22), transparent 40%),
+    radial-gradient(1.5px 1.5px at 30% 60%, #fff 99%, transparent),
+    radial-gradient(1px 1px at 62% 24%, #fff 99%, transparent),
+    radial-gradient(1.2px 1.2px at 82% 48%, #fff 99%, transparent);
+  --blk-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2), inset 0 0 8px currentColor, 0 2px 3px rgba(0, 0, 0, 0.35);
+  --blk-radius: 22%;
+  --blk-deco: none;
+  --blk-deco-inset: 0;
+}
+[data-skin="mix"] [data-c="3"]:not(.skins *),
+.skins [data-skin="mix"] [data-c="3"] {
+  --blk-bg: color-mix(in srgb, currentColor 45%, #eaf7ff);
+  --blk-gloss: linear-gradient(155deg, rgba(255, 255, 255, 0.75) 0 16%, rgba(255, 255, 255, 0) 17% 58%, rgba(255, 255, 255, 0.35) 59% 63%, rgba(255, 255, 255, 0) 64%);
+  --blk-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8), inset 0 -4px 8px rgba(0, 40, 90, 0.18), 0 2px 4px rgba(0, 0, 0, 0.25);
+  --blk-radius: 16%;
+  --blk-deco: radial-gradient(6% 6% at 78% 24%, #fff 70%, transparent 100%);
+  --blk-deco-inset: 0;
+}
+[data-skin="mix"] [data-c="4"]:not(.skins *),
+.skins [data-skin="mix"] [data-c="4"] {
+  --blk-bg: currentColor;
+  --blk-gloss: conic-gradient(from 45deg, rgba(255, 255, 255, 0.45) 0 25%, rgba(0, 0, 0, 0.12) 0 50%, rgba(0, 0, 0, 0.32) 0 75%, rgba(255, 255, 255, 0.18) 0);
+  --blk-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --blk-radius: 10%;
+  --blk-deco:
+    radial-gradient(10% 10% at 30% 30%, #fff 60%, transparent 100%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0) 55%, rgba(0, 0, 0, 0.15)) currentColor;
+  --blk-deco-inset: 24%;
+}
+[data-skin="mix"] [data-c="5"]:not(.skins *),
+.skins [data-skin="mix"] [data-c="5"] {
+  --blk-bg: color-mix(in srgb, currentColor 38%, #a5642c);
+  --blk-gloss:
+    repeating-linear-gradient(95deg, rgba(70, 35, 10, 0.2) 0 1.5px, transparent 1.5px 6px, rgba(255, 230, 190, 0.12) 6px 7px, transparent 7px 11px),
+    linear-gradient(180deg, rgba(255, 240, 210, 0.3), rgba(0, 0, 0, 0.18));
+  --blk-shadow: inset 0 0 0 1.5px rgba(60, 30, 10, 0.45), inset 0 2px 0 rgba(255, 235, 200, 0.35), inset 0 -3px 0 rgba(40, 20, 5, 0.35), 0 2px 3px rgba(0, 0, 0, 0.3);
+  --blk-radius: 12%;
+  --blk-deco: radial-gradient(13% 9% at 70% 36%, rgba(60, 28, 8, 0.55) 55%, rgba(60, 28, 8, 0.2) 75%, transparent 100%);
+  --blk-deco-inset: 0;
+}
+[data-skin="mix"] [data-c="6"]:not(.skins *),
+.skins [data-skin="mix"] [data-c="6"] {
+  --blk-bg: color-mix(in srgb, currentColor 22%, #f0b93a);
+  --blk-gloss: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.28) 50%, rgba(255, 255, 255, 0) 60%, rgba(90, 50, 0, 0.35) 100%);
+  --blk-shadow: inset 0 0 0 1.5px rgba(255, 240, 180, 0.8), inset 0 -3px 0 rgba(120, 70, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --blk-radius: 14%;
+  --blk-deco: radial-gradient(9% 9% at 74% 26%, #fff 35%, transparent 100%);
+  --blk-deco-inset: 0;
+}
+[data-skin="mix"] [data-c="7"]:not(.skins *),
+.skins [data-skin="mix"] [data-c="7"] {
+  --blk-bg: #2a1717;
+  --blk-gloss:
+    linear-gradient(118deg, transparent 38%, currentColor 40% 44%, transparent 46%),
+    linear-gradient(28deg, transparent 58%, currentColor 60% 63%, transparent 65%),
+    radial-gradient(circle at 28% 74%, currentColor 0 10%, transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.3));
+  --blk-shadow: inset 0 0 7px currentColor, inset 0 0 0 1px rgba(255, 255, 255, 0.12), 0 2px 3px rgba(0, 0, 0, 0.4);
+  --blk-radius: 18%;
+  --blk-deco: none;
+  --blk-deco-inset: 0;
+}
+[data-skin="mix"] [data-c="8"]:not(.skins *),
+.skins [data-skin="mix"] [data-c="8"] {
   --blk-bg: currentColor;
   --blk-gloss:
     linear-gradient(160deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 40%),
@@ -232,19 +488,18 @@ body {
 .block,
 .fx-cell {
   color: var(--c);
-  background-color: var(--c);
-  background-image: var(--blk-gloss);
+  background: var(--blk-gloss), var(--c);
   box-shadow: var(--blk-shadow);
   border-radius: var(--blk-radius);
 }
-/* Ältere Browser ohne color-mix bekommen einfach die volle Blockfarbe. */
+/* Ältere Browser ohne color-mix bekommen die volle Blockfarbe als Grund. */
 @supports (background-color: color-mix(in srgb, red 50%, blue)) {
   .cell.filled,
   .cell.ghost,
   .cell.will-clear,
   .block,
   .fx-cell {
-    background-color: var(--blk-bg);
+    background: var(--blk-gloss), var(--blk-bg);
   }
 }
 .cell.filled::after,
@@ -255,6 +510,14 @@ body {
   border-radius: inherit;
   background: var(--blk-deco);
 }
+/* Foto-Design: jeder Block auf dem Feld zeigt seinen Ausschnitt des Bildes (Feld-Innenmaß = Brett − 2×6px Rand, Raster = (Brett − 9px) / 8). */
+body.has-photo[data-skin="foto"] .board .cell.filled {
+  background:
+    var(--photo) calc((var(--board) - 9px) / -8 * var(--col)) calc((var(--board) - 9px) / -8 * var(--row)) / calc(var(--board) - 12px) calc(var(--board) - 12px) no-repeat,
+    var(--c);
+}
+body.has-photo[data-skin="foto"] .board .cell.filled::after { background: none; }
+.skins .block.photo-thumb { background: var(--photo) center / cover, #3a2a55; }
 .block { position: relative; }
 .cell.ghost { opacity: 0.45; box-shadow: none; }
 .cell.will-clear { animation: glow 0.6s ease-in-out infinite alternate; }
@@ -463,7 +726,11 @@ body {
 .overlay.hidden { display: none; }
 @keyframes fade-in { from { opacity: 0; } }
 .panel {
-  width: min(340px, 100%);
+  width: min(360px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
   background: var(--panel);
   border-radius: 24px;
   padding: 24px 20px 20px;
@@ -555,7 +822,18 @@ body {
   cursor: pointer;
 }
 .skins button.active { border-color: var(--accent); background: rgba(255, 95, 162, 0.15); }
-.skins .block { width: 30px; height: 30px; display: block; }
+.skins .block { width: 28px; height: 28px; display: block; }
+.link-btn {
+  margin-top: 8px;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
 .hint { color: var(--muted); font-size: 13px; line-height: 1.4; margin: 16px 0 0; }
 
 @media (prefers-reduced-motion: reduce) {

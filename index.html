@@ -62,16 +62,9 @@
         <label class="toggle"><span>Vibration</span><input type="checkbox" id="opt-haptics" /><i></i></label>
         <div class="skin-row">
           <span>Blöcke</span>
-          <div class="skins" id="skins">
-            <button data-skin="glanz"><b class="block" data-c="1"></b>Glanz</button>
-            <button data-skin="mausi"><b class="block" data-c="2"></b>Mausi</button>
-            <button data-skin="neon"><b class="block" data-c="4"></b>Neon</button>
-            <button data-skin="holz"><b class="block" data-c="7"></b>Holz</button>
-            <button data-skin="edelstein"><b class="block" data-c="3"></b>Edelstein</button>
-            <button data-skin="eis"><b class="block" data-c="3"></b>Eis</button>
-            <button data-skin="bonbon"><b class="block" data-c="8"></b>Bonbon</button>
-            <button data-skin="pastell"><b class="block" data-c="5"></b>Pastell</button>
-          </div>
+          <div class="skins" id="skins"></div>
+          <button id="btn-photo" class="link-btn hidden">Anderes Foto wählen</button>
+          <input id="photo-input" type="file" accept="image/*" hidden />
         </div>
         <label class="toggle small"><span>Neues Design bei „Alles weg!“</span><input type="checkbox" id="opt-skin-cycle" /><i></i></label>
         <button id="btn-newgame" class="btn">Neues Spiel</button>

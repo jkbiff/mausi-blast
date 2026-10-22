@@ -1,23 +1,22 @@
 import { isValidState, type GameState } from "../core/game";
+import { DEFAULT_SKIN, SKIN_IDS } from "../ui/skins";
 
 const KEY_GAME = "mausi-blast:game";
 const KEY_BEST = "mausi-blast:best";
 const KEY_SETTINGS = "mausi-blast:settings";
 const KEY_ROUND_BEST = "mausi-blast:best-at-round-start";
-
-export type Skin = "glanz" | "mausi" | "neon" | "holz" | "edelstein" | "eis" | "bonbon" | "pastell";
-/** Reihenfolge = Wechsel-Reihenfolge bei „Alles weg!“. */
-export const SKINS: Skin[] = ["glanz", "mausi", "neon", "holz", "edelstein", "eis", "bonbon", "pastell"];
+const KEY_PHOTO = "mausi-blast:photo";
 
 export interface Settings {
   sound: boolean;
   haptics: boolean;
-  skin: Skin;
+  /** ID aus src/ui/skins.ts */
+  skin: string;
   /** Bei „Alles weg!“ automatisch zum nächsten Blockdesign wechseln. */
   skinCycle: boolean;
 }
 
-const DEFAULT_SETTINGS: Settings = { sound: true, haptics: true, skin: "glanz", skinCycle: true };
+const DEFAULT_SETTINGS: Settings = { sound: true, haptics: true, skin: DEFAULT_SKIN, skinCycle: true };
 
 function read<T>(key: string): T | null {
   try {
@@ -52,7 +51,25 @@ export const saveRoundBest = (best: number) => write(KEY_ROUND_BEST, best);
 
 export function loadSettings(): Settings {
   const s = { ...DEFAULT_SETTINGS, ...read<Partial<Settings>>(KEY_SETTINGS) };
-  if (!SKINS.includes(s.skin)) s.skin = DEFAULT_SETTINGS.skin;
+  if (!SKIN_IDS.includes(s.skin)) s.skin = DEFAULT_SKIN;
   return s;
 }
 export const saveSettings = (s: Settings) => write(KEY_SETTINGS, s);
+
+/** Eigenes Foto für das Foto-Design, als verkleinerte JPEG-Data-URL. */
+export function loadPhoto(): string | null {
+  try {
+    return localStorage.getItem(KEY_PHOTO);
+  } catch {
+    return null;
+  }
+}
+
+export function savePhoto(dataUrl: string): boolean {
+  try {
+    localStorage.setItem(KEY_PHOTO, dataUrl);
+    return true;
+  } catch {
+    return false;
+  }
+}

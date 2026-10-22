@@ -6,6 +6,7 @@ import { canRevive, newGame, playMove, revive, type GameState } from "./core/gam
 import { getPiece, type Piece } from "./core/pieces";
 import { randomSeed } from "./core/rng";
 import * as store from "./state/storage";
+import { SKINS } from "./ui/skins";
 import * as sfx from "./ui/sound";
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -25,6 +26,8 @@ const comboMeter = $("combo-meter");
 const comboMeterText = $("combo-meter-text");
 const skinsEl = $("skins");
 const skinCycleOpt = $<HTMLInputElement>("opt-skin-cycle");
+const photoBtn = $("btn-photo");
+const photoInput = $<HTMLInputElement>("photo-input");
 
 // ---------- Zustand ----------
 
@@ -44,6 +47,8 @@ let showDead = state.gameOver;
 sfx.setSoundEnabled(settings.sound);
 sfx.setHapticsEnabled(settings.haptics);
 document.body.dataset.skin = settings.skin;
+let photo = store.loadPhoto();
+setPhoto(photo);
 
 // ---------- DOM-Aufbau ----------
 
@@ -53,6 +58,9 @@ for (let i = 0; i < N * N; i++) {
   d.className = "cell";
   // Verzögerung für das zeilenweise Ergrauen beim Game Over
   d.style.setProperty("--d", `${Math.floor(i / N) * 70}ms`);
+  // Position für den Bildausschnitt im Foto-Design
+  d.style.setProperty("--row", String(Math.floor(i / N)));
+  d.style.setProperty("--col", String(i % N));
   boardEl.appendChild(d);
   cells.push(d);
 }
@@ -584,29 +592,87 @@ newGameBtn.addEventListener("click", () => {
   startNewGame();
 });
 
-function applySkin(skin: store.Skin): void {
+function setPhoto(dataUrl: string | null): void {
+  photo = dataUrl;
+  document.body.classList.toggle("has-photo", !!dataUrl);
+  if (dataUrl) document.body.style.setProperty("--photo", `url("${dataUrl}")`);
+}
+
+/** Bild quadratisch zuschneiden und verkleinern, damit es in den lokalen Speicher passt. */
+async function readPhoto(file: File): Promise<string> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const side = Math.min(img.naturalWidth, img.naturalHeight);
+    const size = Math.min(640, side);
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = size;
+    canvas.getContext("2d")!.drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, size, size);
+    return canvas.toDataURL("image/jpeg", 0.82);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+photoInput.addEventListener("change", async () => {
+  const file = photoInput.files?.[0];
+  photoInput.value = "";
+  if (!file) return;
+  try {
+    const dataUrl = await readPhoto(file);
+    if (!store.savePhoto(dataUrl)) throw new Error("Speicher voll");
+    setPhoto(dataUrl);
+    applySkin("foto");
+  } catch {
+    alert("Das Foto konnte leider nicht geladen werden.");
+  }
+});
+
+photoBtn.addEventListener("click", () => photoInput.click());
+
+function applySkin(skin: string): void {
   settings = { ...settings, skin };
   store.saveSettings(settings);
   document.body.dataset.skin = skin;
   renderSkins();
 }
 
-/** Belohnung für „Alles weg!“: das nächste Blockdesign. */
+/** Belohnung für „Alles weg!“: das nächste Blockdesign (Foto nur, wenn eins gewählt ist). */
 function nextSkin(): void {
-  applySkin(store.SKINS[(store.SKINS.indexOf(settings.skin) + 1) % store.SKINS.length]);
+  const ids = SKINS.map((s) => s.id).filter((id) => id !== "foto" || photo);
+  applySkin(ids[(ids.indexOf(settings.skin) + 1) % ids.length]);
   boardEl.classList.remove("skin-swap");
   void boardEl.offsetWidth;
   boardEl.classList.add("skin-swap");
 }
 
 function renderSkins(): void {
-  skinsEl.querySelectorAll<HTMLButtonElement>("button").forEach((b) => b.classList.toggle("active", b.dataset.skin === settings.skin));
+  skinsEl.replaceChildren(
+    ...SKINS.map((s) => {
+      const btn = document.createElement("button");
+      btn.dataset.skin = s.id;
+      btn.classList.toggle("active", s.id === settings.skin);
+      const block = document.createElement("b");
+      block.className = s.id === "foto" && photo ? "block photo-thumb" : "block";
+      block.dataset.c = String(s.preview);
+      btn.append(block, s.name);
+      return btn;
+    }),
+  );
+  photoBtn.classList.toggle("hidden", settings.skin !== "foto" || !photo);
 }
 
 skinsEl.addEventListener("click", (e) => {
   const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-skin]");
-  const skin = btn?.dataset.skin as store.Skin | undefined;
-  if (!skin || !store.SKINS.includes(skin)) return;
+  const skin = btn?.dataset.skin;
+  if (!skin) return;
+  // Foto-Design ohne Foto: erst eins auswählen lassen.
+  if (skin === "foto" && !photo) {
+    photoInput.click();
+    return;
+  }
   applySkin(skin);
   sfx.playPickup();
 });
