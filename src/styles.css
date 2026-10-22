@@ -245,19 +245,20 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
 .cell.ghost { opacity: 0.5; }
 
 /* Vorschau: Linien, die gleich voll werden, bekommen einen Regenbogenrand. */
-.cell.will-clear { filter: brightness(1.25); }
+/* Vorschau: Linien, die gleich voll werden, leuchten in der Farbe des gezogenen Steins. */
+.cell.will-clear { filter: brightness(1.2); }
 .cell.will-clear::before {
   content: "";
   position: absolute;
   inset: -1px;
   z-index: 2;
-  border-radius: 4px;
-  border: 2px solid hsl(var(--h) 95% 62%);
-  box-shadow: 0 0 8px hsl(var(--h) 95% 60%), inset 0 0 8px hsl(var(--h) 95% 70% / 0.7);
-  animation: rainbow-glow 0.7s ease-in-out infinite alternate;
+  border-radius: 3px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 10px var(--c), inset 0 0 8px rgba(255, 255, 255, 0.5);
+  animation: clear-glow 0.6s ease-in-out infinite alternate;
   pointer-events: none;
 }
-@keyframes rainbow-glow { from { opacity: 0.7; } to { opacity: 1; } }
+@keyframes clear-glow { from { opacity: 0.55; } to { opacity: 1; } }
 
 /* Gerade gelegt: kurzes türkises Aufglühen */
 .cell.placed { animation: place-pop 0.14s ease-out; }
@@ -292,6 +293,21 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
 
 /* Block zerspringt */
 .fx-cell { position: absolute; animation: burst 0.22s ease-in forwards; }
+.fx-cell.rb { animation-delay: calc(var(--delay, 0ms) + 110ms); }
+.fx-cell.rb::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: hsl(var(--h) 95% 62% / 0.8);
+  box-shadow: 0 0 10px hsl(var(--h) 95% 60%);
+  animation: rb-tint 0.16s ease-out var(--delay, 0ms) both;
+}
+@keyframes rb-tint {
+  0% { opacity: 0; }
+  30% { opacity: 1; }
+  100% { opacity: 0; }
+}
 @keyframes burst {
   0% { transform: scale(1); filter: brightness(1); }
   30% { transform: scale(1.08); filter: brightness(2.2); }
@@ -302,8 +318,8 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
   width: var(--s);
   height: var(--s);
   background: var(--c);
-  clip-path: polygon(0 0, 100% 30%, 60% 100%);
-  box-shadow: inset 0 0 0 40px rgba(255, 255, 255, 0.35);
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 40px rgba(255, 255, 255, 0.25), 0 0 6px var(--c);
   animation: shard 0.5s cubic-bezier(0.15, 0.6, 0.35, 1) forwards;
 }
 @keyframes shard {
@@ -438,6 +454,7 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
 .t3d.orange { --t1: #fff4c8; --t2: #ffb43a; --t3: #ff6a1a; --te: #6b2200; }
 .t3d.rainbow { --t1: #ff5f8a; --t2: #ffe04a; --t3: #4ad8ff; --te: #5a1a6b; background: linear-gradient(90deg, #ff4f7a, #ffa53a, #ffe04a, #5fe36a, #4ad8ff, #a46bff); -webkit-background-clip: text; background-clip: text; }
 .t3d.gold { --t1: #fffbe0; --t2: #ffd84a; --t3: #d48a00; --te: #5a3300; }
+.t3d.theme { --t1: #ffffff; --t2: var(--fx-accent); --t3: var(--p7); --te: #241046; }
 
 /* Combo-Zahl auf jedem abgeräumten Block */
 .cell-num {
@@ -581,15 +598,25 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
 .theme-title {
   position: absolute;
   left: 50%;
-  top: 40%;
+  top: 38%;
   transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  animation: banner 2.2s ease-out forwards;
+  animation: title-zoom 2.3s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
 }
-.theme-title .t3d { font-size: 58px; }
+.theme-title .t3d { font-size: min(64px, 16vw); }
 .theme-title .t3d.sub { font-size: 22px; }
+.theme-title .name { display: flex; align-items: center; gap: 4px; }
+/* Wie im Original: Name kommt riesig ins Bild und schrumpft auf normale Größe */
+@keyframes title-zoom {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(3.2); }
+  12% { opacity: 1; transform: translate(-50%, -50%) scale(2.4); }
+  30% { transform: translate(-50%, -50%) scale(0.95); }
+  38% { transform: translate(-50%, -50%) scale(1); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
 
 /* ---------- Tray ---------- */
 .tray {

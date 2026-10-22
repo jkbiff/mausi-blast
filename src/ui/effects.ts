@@ -99,23 +99,25 @@ export function shatter(indices: number[], colorOf: (i: number) => string, rows:
     const away = horizontal ? Math.sign(col - oc) || (Math.random() < 0.5 ? -1 : 1) : Math.sign(row - or) || 1;
     const delay = Math.round((horizontal ? Math.abs(col - oc) : Math.abs(row - or)) * 18);
     const color = colorOf(i);
-    const cell = div("fx-cell", {
+    // Erst läuft ein Regenbogen durch die Linie, dann zerfällt der Block in kleine Quadrate.
+    const cell = div("fx-cell rb", {
       left: `${r.x}px`,
       top: `${r.y}px`,
       width: `${r.w}px`,
       height: `${r.h}px`,
-      animationDelay: `${delay}ms`,
+      "--delay": `${delay}ms`,
+      "--h": String(((horizontal ? col : row) * 45) % 360),
     });
     cell.dataset.c = color;
-    spawn(cell, 260 + delay);
-    for (let k = 0; k < 5; k++) {
-      const along = away * rand(40, 120);
-      const across = rand(-30, 30);
+    spawn(cell, 380 + delay);
+    for (let k = 0; k < 7; k++) {
+      const along = away * rand(30, 110);
+      const across = rand(-28, 28);
       const shard = div("shard", {
-        left: `${r.x + rand(0, r.w * 0.6)}px`,
-        top: `${r.y + rand(0, r.h * 0.6)}px`,
-        animationDelay: `${delay + 40}ms`,
-        "--s": `${rand(r.w * 0.25, r.w * 0.5)}px`,
+        left: `${r.x + rand(0, r.w * 0.75)}px`,
+        top: `${r.y + rand(0, r.h * 0.75)}px`,
+        animationDelay: `${delay + 150}ms`,
+        "--s": `${rand(r.w * 0.14, r.w * 0.3)}px`,
         "--dx": `${horizontal ? along : across}px`,
         "--dy": `${(horizontal ? across : along) + rand(0, 25)}px`,
         "--rot": `${rand(-400, 400)}deg`,
@@ -123,7 +125,7 @@ export function shatter(indices: number[], colorOf: (i: number) => string, rows:
       shard.dataset.c = color;
       shard.style.opacity = "0";
       shard.style.animationFillMode = "both";
-      spawn(shard, 600 + delay);
+      spawn(shard, 700 + delay);
     }
   }
 }
@@ -184,7 +186,7 @@ export function comboContent(combo: number): HTMLElement[] {
   if (combo >= 6) {
     return [div("crown-icon"), text3d("Combo-Meister", "gold", "long"), text3d(`×${combo}`, "orange", "sub")];
   }
-  if (combo >= 4) return [text3d(`Combo ${combo}`, "green")];
+  if (combo >= 4) return [text3d(`Combo ${combo}`, "theme")];
   const row = div("combo-x");
   row.append(div("mascot"), text3d(`×${combo}`, "orange"), div("mascot right"));
   return [row];
@@ -329,7 +331,9 @@ export function celebrate(themeName: string | null): void {
   }
   if (themeName) {
     const title = div("theme-title");
-    title.append(text3d("Neues Thema", "cyan", "sub"), text3d(themeName, "green"));
+    const name = div("name");
+    name.append(div("mascot"), text3d(themeName, "gold"), div("mascot right"));
+    title.append(text3d("Neues Thema", "cyan", "sub"), name);
     layer.appendChild(title);
   }
   document.body.appendChild(layer);

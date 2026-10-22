@@ -124,11 +124,10 @@ function renderBoard(o: BoardOverlay = {}): void {
       cls += " ghost";
       color = o.color!;
     }
-    const inRow = rows.has(r);
-    if (inRow || cols.has(c)) {
+    if (rows.has(r) || cols.has(c)) {
+      // Wie im Original: die Linie nimmt die Farbe des gezogenen Steins an
       cls += " will-clear";
-      // Regenbogen entlang der Linie
-      cells[i].style.setProperty("--h", String(((inRow ? c : r) * 45) % 360));
+      color = o.color!;
     }
     if (placed.has(i)) cls += " placed";
     const el = cells[i];
@@ -263,7 +262,6 @@ function praiseVariant(lines: number): string {
 
 function commitMove(slot: number, row: number, col: number): void {
   const item = state.tray[slot]!;
-  const before = state.board;
   const res = playMove(state, slot, row, col);
   state = res.state;
   store.saveGame(state);
@@ -272,10 +270,9 @@ function commitMove(slot: number, row: number, col: number): void {
   fx.placeSparkles(res.placedCells);
 
   if (res.allClear) {
-    allClearSequence(res, item.color, before);
+    allClearSequence(res, item.color);
   } else if (res.linesCleared > 0) {
-    const placed = new Set(res.placedCells);
-    fx.shatter(res.clearedCells, (i) => String(placed.has(i) ? item.color : before[i]), res.clearedRows, res.placedCells);
+    fx.shatter(res.clearedCells, () => String(item.color), res.clearedRows, res.placedCells);
     fx.streaks(res.clearedRows, res.clearedCols);
     if (res.combo >= 2) fx.cellNumbers(res.clearedCells, res.combo);
     fx.points(res.points, fx.centroid(res.clearedCells), res.combo >= 4 ? "green" : "gold");
@@ -307,14 +304,13 @@ function commitMove(slot: number, row: number, col: number): void {
  * Themenwechsel, Feld füllt sich von unten, Ballons → Feld leert sich von oben, Lichtstreifen →
  * Motive des neuen Themas fliegen übers leere Feld.
  */
-function allClearSequence(res: MoveResult, color: number, before: number[]): void {
-  const placed = new Set(res.placedCells);
+function allClearSequence(res: MoveResult, color: number): void {
   sfx.playAllClear();
   sfx.vibrate([30, 40, 30, 40, 80]);
   fx.flicker(res.clearedCells, 480);
 
   window.setTimeout(() => {
-    fx.shatter(res.clearedCells, (i) => String(placed.has(i) ? color : before[i]), res.clearedRows, res.placedCells);
+    fx.shatter(res.clearedCells, () => String(color), res.clearedRows, res.placedCells);
     fx.streaks(res.clearedRows, res.clearedCols);
     fx.lightRockets(res.clearedRows, res.clearedCols);
     if (res.combo >= 2) fx.cellNumbers(res.clearedCells, res.combo);
