@@ -5,8 +5,9 @@ const KEY_BEST = "mausi-blast:best";
 const KEY_SETTINGS = "mausi-blast:settings";
 const KEY_ROUND_BEST = "mausi-blast:best-at-round-start";
 
-export type Skin = "glanz" | "mausi" | "pastell";
-export const SKINS: Skin[] = ["glanz", "mausi", "pastell"];
+export type Skin = "glanz" | "mausi" | "neon" | "holz" | "edelstein" | "eis" | "bonbon" | "pastell";
+/** Reihenfolge = Wechsel-Reihenfolge bei „Alles weg!“. */
+export const SKINS: Skin[] = ["glanz", "mausi", "neon", "holz", "edelstein", "eis", "bonbon", "pastell"];
 
 export interface Settings {
   sound: boolean;
