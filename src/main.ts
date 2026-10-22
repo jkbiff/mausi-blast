@@ -2,7 +2,7 @@ import "./styles.css";
 import { BOARD_SIZE as N, COMBO_MISS_LIMIT, TRAY_SIZE } from "./config";
 import { canPlace, canPlaceAnywhere, place } from "./core/board";
 import { praiseLabel } from "./core/combo";
-import { canRevive, newGame, playMove, revive, type GameState } from "./core/game";
+import { canRevive, newGame, playMove, revive, type GameState, type MoveResult } from "./core/game";
 import { getPiece, type Piece } from "./core/pieces";
 import { randomSeed } from "./core/rng";
 import * as store from "./state/storage";
@@ -215,7 +215,8 @@ function renderComboMeter(bump = false): void {
 }
 
 let scoreAnim = 0;
-function animateScore(): void {
+/** Zählt den angezeigten Punktestand hoch; `durMs` erzwingt eine Dauer (z. B. während der Feier). */
+function animateScore(durMs?: number): void {
   cancelAnimationFrame(scoreAnim);
   const from = shownScore;
   const to = state.score;
@@ -224,7 +225,7 @@ function animateScore(): void {
     return;
   }
   const start = performance.now();
-  const dur = Math.min(450, 150 + (to - from) * 1.5);
+  const dur = durMs ?? Math.min(450, 150 + (to - from) * 1.5);
   scoreEl.classList.remove("bump");
   void scoreEl.offsetWidth;
   scoreEl.classList.add("bump");
@@ -270,7 +271,9 @@ function commitMove(slot: number, row: number, col: number): void {
   renderBoard({ placed: res.placedCells });
   fx.placeSparkles(res.placedCells);
 
-  if (res.linesCleared > 0) {
+  if (res.allClear) {
+    allClearSequence(res, item.color, before);
+  } else if (res.linesCleared > 0) {
     const placed = new Set(res.placedCells);
     fx.shatter(res.clearedCells, (i) => String(placed.has(i) ? item.color : before[i]), res.clearedRows, res.placedCells);
     fx.streaks(res.clearedRows, res.clearedCols);
@@ -278,20 +281,13 @@ function commitMove(slot: number, row: number, col: number): void {
     fx.points(res.points, fx.centroid(res.clearedCells), res.combo >= 4 ? "green" : "gold");
     pulseScoreGem();
 
-    if (res.allClear) {
-      fx.banner([fx.text3d("Alles weg!", "rainbow"), fx.text3d("+300", "gold", "sub")], "huge", 1600);
-      if (settings.skinCycle) window.setTimeout(nextSkin, 1100);
-      sfx.playAllClear();
-      sfx.vibrate([30, 40, 30, 40, 80]);
-    } else {
-      const parts: HTMLElement[] = [];
-      const praise = praiseLabel(res.linesCleared);
-      if (praise) parts.push(fx.text3d(praise, praiseVariant(res.linesCleared)));
-      if (res.combo >= 2) parts.push(...fx.comboContent(res.combo));
-      if (parts.length) fx.banner(parts, res.linesCleared >= 4 || res.combo >= 6 ? "huge" : "");
-      sfx.playClear(res.linesCleared, res.combo);
-      sfx.vibrate(res.linesCleared > 1 ? [20, 30, 35] : 25);
-    }
+    const parts: HTMLElement[] = [];
+    const praise = praiseLabel(res.linesCleared);
+    if (praise) parts.push(fx.text3d(praise, praiseVariant(res.linesCleared)));
+    if (res.combo >= 2) parts.push(...fx.comboContent(res.combo));
+    if (parts.length) fx.banner(parts, res.linesCleared >= 4 || res.combo >= 6 ? "huge" : "");
+    sfx.playClear(res.linesCleared, res.combo);
+    sfx.vibrate(res.linesCleared > 1 ? [20, 30, 35] : 25);
     if (res.linesCleared >= 3) shake();
   } else {
     sfx.playPlace();
@@ -299,10 +295,51 @@ function commitMove(slot: number, row: number, col: number): void {
   }
 
   setBest();
-  animateScore();
+  // Bei „Alles weg!“ zählt der Punktestand während der ganzen Feier hoch
+  animateScore(res.allClear ? 2600 : undefined);
   renderComboMeter(res.linesCleared > 0);
   renderTray(res.dealtNewTray);
   if (state.gameOver) scheduleGameOver();
+}
+
+/**
+ * „Alles weg!“ wie im Original: Flackern → Zersplittern mit Leuchtkugeln und Combo →
+ * Themenwechsel, Feld füllt sich von unten, Ballons → Feld leert sich von oben, Lichtstreifen →
+ * Motive des neuen Themas fliegen übers leere Feld.
+ */
+function allClearSequence(res: MoveResult, color: number, before: number[]): void {
+  const placed = new Set(res.placedCells);
+  sfx.playAllClear();
+  sfx.vibrate([30, 40, 30, 40, 80]);
+  fx.flicker(res.clearedCells, 480);
+
+  window.setTimeout(() => {
+    fx.shatter(res.clearedCells, (i) => String(placed.has(i) ? color : before[i]), res.clearedRows, res.placedCells);
+    fx.streaks(res.clearedRows, res.clearedCols);
+    fx.lightRockets(res.clearedRows, res.clearedCols);
+    if (res.combo >= 2) fx.cellNumbers(res.clearedCells, res.combo);
+    fx.points(res.points, fx.centroid(res.clearedCells), "gold");
+    pulseScoreGem();
+    // Kurz genug, dass es vor dem Themenwechsel verschwindet (Name des neuen Themas folgt)
+    const parts = [fx.text3d("Alles weg!", "rainbow")];
+    if (res.combo >= 2) parts.push(...fx.comboContent(res.combo));
+    fx.banner(parts, "huge", 720);
+  }, 480);
+
+  window.setTimeout(() => {
+    let title: string | null = null;
+    if (settings.skinCycle) {
+      const next = nextSkinId();
+      applySkin(next);
+      title = skinName(next);
+    }
+    boardWrap.classList.add("neon");
+    fx.curtain();
+    fx.celebrate(title);
+  }, 1150);
+  window.setTimeout(fx.shine, 2150);
+  window.setTimeout(fx.themeIntro, 2650);
+  window.setTimeout(() => boardWrap.classList.remove("neon"), 3800);
 }
 
 function scheduleGameOver(): void {
@@ -567,15 +604,10 @@ function applySkin(skin: string): void {
   renderSkins();
 }
 
-/** Belohnung für „Alles weg!“: Feier und das nächste Thema (Foto nur, wenn eins gewählt ist). */
-function nextSkin(): void {
+/** Nächstes Thema für „Alles weg!“ (Foto nur, wenn eins gewählt ist). */
+function nextSkinId(): string {
   const ids = SKINS.map((s) => s.id).filter((id) => id !== "foto" || photo);
-  const next = ids[(ids.indexOf(settings.skin) + 1) % ids.length];
-  fx.celebrate(skinName(next), () => {
-    applySkin(next);
-    boardWrap.classList.add("neon");
-    window.setTimeout(() => boardWrap.classList.remove("neon"), 1800);
-  });
+  return ids[(ids.indexOf(settings.skin) + 1) % ids.length];
 }
 
 /** Album-Karte: Themenhintergrund mit 3×3-Vorschau der Blöcke. */

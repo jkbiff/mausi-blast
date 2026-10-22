@@ -78,9 +78,8 @@ export function sparks(at: Pt, count: number, spread = 50, color = "#fff", delay
 /** Funken rund um einen frisch gelegten Stein (das türkise Aufglühen macht CSS). */
 export function placeSparkles(indices: number[]): void {
   for (const i of indices) {
-    if (Math.random() > 0.5) continue;
     const r = cellRect(i);
-    sparks({ x: r.x + rand(0, r.w), y: r.y + rand(0, r.h) }, 1, 22, "#8ff6ff");
+    sparks({ x: r.x + rand(0, r.w), y: r.y + rand(0, r.h) }, 2, 26, "#ffd76a");
   }
 }
 
@@ -214,13 +213,96 @@ export function sparksAt(x: number, y: number, count: number, color = "#bfffe6")
   sparks({ x, y }, count, 40, color, 0, globalFx);
 }
 
-const BALLOONS = ["#ffd23a", "#ff5f8a", "#a66cff", "#ffd23a", "#ff8fc0", "#7f6cff", "#ffe066"];
+/** Auftakt zu „Alles weg!“: die abgeräumten Blöcke flackern in wechselnden Farben. */
+export function flicker(indices: number[], duration: number): void {
+  const els = indices.map((i) => {
+    const r = cellRect(i);
+    const d = div("fx-cell flicker", { left: `${r.x}px`, top: `${r.y}px`, width: `${r.w}px`, height: `${r.h}px` });
+    d.dataset.c = String(1 + Math.floor(Math.random() * 8));
+    fx.appendChild(d);
+    return d;
+  });
+  const timer = window.setInterval(() => {
+    for (const d of els) {
+      d.dataset.c = String(1 + Math.floor(Math.random() * 8));
+      d.classList.toggle("dim", Math.random() < 0.3);
+    }
+  }, 70);
+  window.setTimeout(() => {
+    window.clearInterval(timer);
+    els.forEach((d) => d.remove());
+  }, duration);
+}
+
+/** Leuchtkugeln mit Schweif schießen durch die geschafften Spalten nach oben bzw. durch Zeilen nach rechts. */
+export function lightRockets(rows: number[], cols: number[]): void {
+  const rocket = (from: number, to: number, rot: string, delay: number) => {
+    const a = cellRect(from);
+    const b = cellRect(to);
+    spawn(
+      div("orb", {
+        left: `${a.x + a.w / 2 - 8}px`,
+        top: `${a.y + a.h / 2 - 8}px`,
+        animationDelay: `${delay}ms`,
+        "--dx": `${b.x - a.x}px`,
+        "--dy": `${b.y - a.y}px`,
+        "--rot": rot,
+      }),
+      700 + delay,
+    );
+  };
+  cols.forEach((c, k) => rocket((N - 1) * N + c, c, "0deg", k * 60));
+  rows.forEach((r, k) => rocket(r * N, r * N + N - 1, "90deg", k * 60));
+}
 
 /**
- * Feier beim Themenwechsel: Ballons steigen auf, Konfetti fällt, der Name des neuen Themas
- * erscheint. `onPeak` läuft, wenn die Ballons den Bildschirm bedecken (Thema wechseln).
+ * Das Feld füllt sich reihenweise von unten mit Blöcken des (neuen) Themas
+ * und leert sich danach reihenweise von oben.
  */
-export function celebrate(themeName: string, onPeak: () => void): void {
+export function curtain(): void {
+  for (let i = 0; i < N * N; i++) {
+    const row = Math.floor(i / N);
+    const r = cellRect(i);
+    const b = div("block curtain", {
+      left: `${r.x}px`,
+      top: `${r.y}px`,
+      width: `${r.w}px`,
+      height: `${r.h}px`,
+      "--din": `${(N - 1 - row) * 55}ms`,
+      "--dout": `${950 + row * 55}ms`,
+    });
+    b.dataset.c = "1";
+    spawn(b, 950 + N * 55 + 260);
+  }
+}
+
+/** Diagonaler Lichtstreifen über das Spielfeld. */
+export function shine(): void {
+  spawn(div("shine"), 650);
+}
+
+/** Motive des neuen Themas fliegen diagonal über das leere Feld (wie die Raketen im Original). */
+export function themeIntro(): void {
+  const base = fx.getBoundingClientRect();
+  for (let k = 0; k < 3; k++) {
+    spawn(
+      div("intro-motif", {
+        left: `${rand(-0.1, 0.35) * base.width}px`,
+        top: `${base.height * rand(0.75, 0.95)}px`,
+        fontSize: `${rand(34, 52)}px`,
+        animationDelay: `${k * 220}ms`,
+        "--dx": `${base.width * 0.9}px`,
+        "--dy": `${-base.height * 0.9}px`,
+      }),
+      1200 + k * 220,
+    );
+  }
+}
+
+const BALLOONS = ["#ffd23a", "#ff5f8a", "#a66cff", "#ffd23a", "#ff8fc0", "#7f6cff", "#ffe066"];
+
+/** Feier bei „Alles weg!“: Ballons steigen auf, Konfetti fällt, optional mit Name des neuen Themas. */
+export function celebrate(themeName: string | null): void {
   const layer = div("celebrate");
   for (let k = 0; k < 26; k++) {
     layer.appendChild(
@@ -245,10 +327,11 @@ export function celebrate(themeName: string, onPeak: () => void): void {
       }),
     );
   }
-  const title = div("theme-title");
-  title.append(text3d("Neues Thema", "cyan", "sub"), text3d(themeName, "green"));
-  layer.appendChild(title);
+  if (themeName) {
+    const title = div("theme-title");
+    title.append(text3d("Neues Thema", "cyan", "sub"), text3d(themeName, "green"));
+    layer.appendChild(title);
+  }
   document.body.appendChild(layer);
-  window.setTimeout(onPeak, 900);
   window.setTimeout(() => layer.remove(), 3400);
 }

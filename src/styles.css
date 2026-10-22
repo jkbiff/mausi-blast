@@ -310,6 +310,80 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
   from { transform: translate(0, 0) rotate(0); opacity: 1; }
   to { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; }
 }
+/* „Alles weg!“: Flackern, Leuchtkugeln, Block-Vorhang, Lichtstreifen, Themen-Intro */
+.fx-cell.flicker { animation: none; filter: brightness(1.15); }
+.fx-cell.flicker.dim { opacity: 0.35; }
+.orb {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 30%, var(--fx-accent) 70%);
+  box-shadow: 0 0 12px var(--fx-accent), 0 0 24px var(--fx-accent);
+  animation: orb 0.6s cubic-bezier(0.4, 0, 0.7, 1) both;
+}
+.orb::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 8px;
+  width: 6px;
+  height: 70px;
+  border-radius: 3px;
+  background: linear-gradient(var(--fx-accent), transparent);
+  transform: rotate(var(--rot));
+  transform-origin: 3px 0;
+}
+@keyframes orb {
+  0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
+  12% { opacity: 1; transform: translate(0, 0) scale(1); }
+  85% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(1.2); opacity: 0; }
+}
+.curtain {
+  position: absolute;
+  animation: curtain-in 0.18s ease-out var(--din) both, curtain-out 0.2s ease-in var(--dout) forwards;
+}
+@keyframes curtain-in {
+  from { transform: translateY(-35%) scale(0.6); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes curtain-out {
+  to { transform: scale(0.2); opacity: 0; }
+}
+.shine {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 6px;
+}
+.shine::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 35%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+  transform: rotate(30deg);
+  animation: shine 0.6s ease-in-out forwards;
+}
+@keyframes shine { to { left: 130%; } }
+.intro-motif {
+  position: absolute;
+  color: var(--fx-accent);
+  text-shadow: 0 0 12px var(--fx-accent), -14px 14px 14px var(--fx-accent);
+  opacity: 0;
+  animation: intro-fly 1s ease-in-out both;
+}
+.intro-motif::before { content: var(--motif); }
+@keyframes intro-fly {
+  0% { transform: translate(0, 0) rotate(-20deg); opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) rotate(10deg); opacity: 0; }
+}
+
 /* Lichtstreifen entlang der geschafften Linie */
 .streak {
   position: absolute;
