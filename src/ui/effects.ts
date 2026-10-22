@@ -199,6 +199,17 @@ export function linesContent(lines: number): HTMLElement[] {
   return [row];
 }
 
+/** „Farbe weg!“ oben im Feld mit buntem Funkenregen. */
+export function colorGone(): void {
+  const base = fx.getBoundingClientRect();
+  const at = { x: base.width * 0.5, y: base.height * 0.22 };
+  const el = div("color-gone", { left: `${at.x}px`, top: `${at.y}px` });
+  el.appendChild(text3d("Farbe weg!", "rose"));
+  spawn(el, 1300);
+  const colors = ["#ff4f7a", "#ffa53a", "#ffe04a", "#5fe36a", "#4ad8ff", "#a46bff"];
+  colors.forEach((c, k) => sparks(at, 5, 90, c, k * 30));
+}
+
 const PRAISE_WORDS = ["Gut!", "Toll!", "Super!", "Klasse!", "Wunderbar!"];
 
 /** Eine einzelne Reihe: großes Herz mitten auf der Linie, Lobwort darüber, leuchtende Linie. */

@@ -263,19 +263,32 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
 
 /* Vorschau: Linien, die gleich voll werden, bekommen einen Regenbogenrand. */
 /* Vorschau: Linien, die gleich voll werden, leuchten in der Farbe des gezogenen Steins. */
-.cell.will-clear { filter: brightness(1.2); }
+/* Vorschau: betroffene Linien färben sich als Welle vom Stein aus in dessen Farbe (--pc) um,
+   ein Glanzlicht wandert darüber. --wd = Verzögerung je nach Abstand zum Stein. */
 .cell.will-clear::before {
   content: "";
   position: absolute;
   inset: -1px;
   z-index: 2;
   border-radius: 3px;
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 0 10px var(--c), inset 0 0 8px rgba(255, 255, 255, 0.5);
-  animation: clear-glow 0.6s ease-in-out infinite alternate;
+  background:
+    linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.7) 50%, transparent 65%) 0 0 / 300% 100% no-repeat,
+    linear-gradient(160deg, rgba(255, 255, 255, 0.35), rgba(0, 0, 0, 0.12)),
+    var(--pc);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55), 0 0 10px var(--pc);
+  animation:
+    recolor-in 0.16s ease-out var(--wd, 0ms) both,
+    glint 1.1s linear calc(var(--wd, 0ms) + 0.2s) infinite;
   pointer-events: none;
 }
-@keyframes clear-glow { from { opacity: 0.55; } to { opacity: 1; } }
+@keyframes recolor-in {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes glint {
+  from { background-position: 150% 0, 0 0, 0 0; }
+  to { background-position: -150% 0, 0 0, 0 0; }
+}
 
 /* Gerade gelegt: kurzes türkises Aufglühen */
 .cell.placed { animation: place-pop 0.14s ease-out; }
@@ -476,6 +489,14 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
 .t3d.rainbow { --t1: #ff5f8a; --t2: #ffe04a; --t3: #4ad8ff; --te: #5a1a6b; background: linear-gradient(90deg, #ff4f7a, #ffa53a, #ffe04a, #5fe36a, #4ad8ff, #a46bff); -webkit-background-clip: text; background-clip: text; }
 .t3d.gold { --t1: #fffbe0; --t2: #ffd84a; --t3: #d48a00; --te: #5a3300; }
 .t3d.white { --t1: #ffffff; --t2: #ffffff; --t3: #dfe4ff; --te: #2a2050; }
+.t3d.rose { --t1: #ffffff; --t2: #fff4f7; --t3: #ffd3e0; --te: #c41e55; }
+.color-gone {
+  position: absolute;
+  z-index: 5;
+  transform: translate(-50%, -50%);
+  animation: banner 1.25s ease-out forwards;
+}
+.color-gone .t3d { display: block; font-size: min(40px, calc(var(--board) * 0.105)); transform: skewX(-8deg); }
 /* „Combo“ weiß und leicht schräg, die Zahl groß in Gold – wie im Original */
 .combo-n { display: flex; align-items: baseline; gap: 6px; }
 .combo-n .t3d.white { transform: skewX(-8deg); }

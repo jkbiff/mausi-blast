@@ -113,6 +113,9 @@ function renderBoard(o: BoardOverlay = {}): void {
   const placed = new Set(o.placed);
   const rows = new Set(o.clearRows);
   const cols = new Set(o.clearCols);
+  // Mitte des Geist-Steins: von dort läuft die Umfärbe-Welle durch die Linien
+  const gr = o.ghost?.length ? o.ghost.reduce((s, i) => s + Math.floor(i / N), 0) / o.ghost.length : 0;
+  const gc = o.ghost?.length ? o.ghost.reduce((s, i) => s + (i % N), 0) / o.ghost.length : 0;
   for (let i = 0; i < N * N; i++) {
     const v = state.board[i];
     const r = Math.floor(i / N);
@@ -130,9 +133,11 @@ function renderBoard(o: BoardOverlay = {}): void {
       color = o.color!;
     }
     if (rows.has(r) || cols.has(c)) {
-      // Wie im Original: die Linie nimmt die Farbe des gezogenen Steins an
+      // Wie im Original: die Linie färbt sich als Welle vom Stein aus in dessen Farbe um
       cls += " will-clear";
-      color = o.color!;
+      const dist = Math.min(rows.has(r) ? Math.abs(c - gc) : 99, cols.has(c) ? Math.abs(r - gr) : 99);
+      cells[i].style.setProperty("--wd", `${Math.round(dist * 40)}ms`);
+      cells[i].style.setProperty("--pc", `var(--p${o.color})`);
     }
     if (placed.has(i)) cls += " placed";
     const el = cells[i];
@@ -274,6 +279,7 @@ function praiseVariant(lines: number): string {
 
 function commitMove(slot: number, row: number, col: number): void {
   const item = state.tray[slot]!;
+  const before = state.board;
   const res = playMove(state, slot, row, col);
   state = res.state;
   store.saveGame(state);
@@ -300,6 +306,10 @@ function commitMove(slot: number, row: number, col: number): void {
     }
     if (res.combo >= 2) parts.push(...fx.comboContent(res.combo));
     if (parts.length) fx.banner(parts, res.linesCleared >= 4 || res.combo >= 8 ? "huge" : "");
+    // „Farbe weg!“: eine Farbe, die vorher auf dem Feld war, ist durch das Abräumen ganz verschwunden
+    const colorsBefore = new Set([...before.filter(Boolean), item.color]);
+    const colorsAfter = new Set(state.board.filter(Boolean));
+    if ([...colorsBefore].some((c) => !colorsAfter.has(c))) window.setTimeout(fx.colorGone, 150);
     sfx.playClear(res.linesCleared, res.combo);
     sfx.vibrate(res.linesCleared > 1 ? [20, 30, 35] : 25);
     if (res.linesCleared >= 3) shake();
