@@ -39,7 +39,9 @@ src/core/            reine Spiellogik, testbar ohne Browser
   rng.ts             seedbarer Zufall
 src/state/storage.ts Speichern/Laden (localStorage)
 src/ui/sound.ts      synthetisierte Sounds + Vibration
-src/ui/skins.ts      Liste der Blockdesigns (Aussehen: Abschnitt „Blockdesigns“ in styles.css)
+src/ui/effects.ts    Effekte: Zersplittern, Punktzahlen, Combo-Banner, Themenwechsel-Feier
+src/ui/skins.ts      Liste der 26 Themen (+ eigenes Foto)
+src/skins.css        Aussehen der Themen – erzeugt von scripts/gen-skins.py
 src/main.ts          Darstellung, Drag & Drop, Animationen
 tests/               Unit-Tests (alle Testfälle aus der Spec)
 public/              Manifest, Service Worker, Icons
