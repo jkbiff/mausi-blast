@@ -1,10 +1,10 @@
 // Punktewertung, gemessen an der Original-App (siehe config.ts).
-import { ALL_CLEAR_BONUS, LINE_POINTS_OFFSET, LINE_POINTS_PER_COMBO } from "../config";
+import { ALL_CLEAR_BONUS, LINE_POINTS_BASE, LINE_POINTS_PER_COMBO } from "../config";
 
-/** Linienpunkte: pro Linie 55 × Combo − 5 (Combo = Position in der Combo, ohne Obergrenze). */
+/** Linienpunkte: pro Linie 51 × Combo + 56 (Combo = Position in der Combo, ohne Obergrenze). */
 export function linePoints(lines: number, combo: number): number {
   if (lines <= 0) return 0;
-  return lines * (LINE_POINTS_PER_COMBO * Math.max(combo, 1) - LINE_POINTS_OFFSET);
+  return lines * (LINE_POINTS_PER_COMBO * Math.max(combo, 1) + LINE_POINTS_BASE);
 }
 
 /** Komplettabräumung: der Zug räumt Linien ab und hinterlässt ein leeres Feld. */

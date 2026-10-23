@@ -82,7 +82,7 @@ nach jeder Platzierung:
 - **Anzeige:** Bei C = 1 kein Label. Bei C = 2 „COMBO“ ohne Zahl. Ab C = 3 „COMBO {C−1}“. (Für Mausi Blast frei änderbar, z. B. einfach „Combo ×C“.)
 
 > **Stand Mausi Blast:** Die Punktewertung ist an Bildschirmaufnahmen der Original-App gemessen:
-> 1 Punkt pro Block, pro abgeräumter Linie 55 × Combo − 5 (ohne Obergrenze), +300 bei
+> 1 Punkt pro Block, pro abgeräumter Linie 51 × Combo + 56 (ohne Obergrenze), +300 bei
 > Komplettabräumung (siehe `src/config.ts`). Abschnitt 4 unten beschreibt die ursprüngliche Spec und gilt nicht mehr.
 
 ## 4. Punkteformel (Original-Baseline)

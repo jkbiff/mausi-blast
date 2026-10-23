@@ -5,12 +5,13 @@ export const TRAY_SIZE = 3;
 
 // Punkte
 /**
- * Linienpunkte pro Linie = LINE_POINTS_PER_COMBO × Combo − LINE_POINTS_OFFSET.
- * Aus Bildschirmaufnahmen der Original-App gemessen (z. B. 1 Linie bei Combo 14 → 770,
- * 2 Linien bei Combo 12 → 1334, 3 Linien ohne Combo → 154); trifft diese auf wenige Prozent.
+ * Linienpunkte pro Linie = LINE_POINTS_PER_COMBO × Combo + LINE_POINTS_BASE.
+ * Aus Bildschirmaufnahmen der Original-App gemessen; trifft alle Werte ab Combo 10 auf < 1 %:
+ * 1 Linie bei Combo 10/13/14/15/20/21/22 → 566/720/770/822/1076/1126/1178,
+ * 2 Linien bei Combo 12 → 1334, 6 Linien bei Combo 19 → 6140.
  */
-export const LINE_POINTS_PER_COMBO = 55;
-export const LINE_POINTS_OFFSET = 5;
+export const LINE_POINTS_PER_COMBO = 51;
+export const LINE_POINTS_BASE = 56;
 export const ALL_CLEAR_BONUS = 300;
 
 // Combo: so viele Platzierungen ohne Clear in Folge setzen die Combo zurück.
