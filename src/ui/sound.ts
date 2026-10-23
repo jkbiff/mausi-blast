@@ -78,18 +78,3 @@ export function playGameOver(): void {
   if (!ready()) return;
   [7, 4, 0, -5].forEach((s, i) => tone(semis(392, s), i * 0.16, 0.3, "sine", 0.18));
 }
-
-let hapticsEnabled = true;
-
-export function setHapticsEnabled(on: boolean): void {
-  hapticsEnabled = on;
-}
-
-export function vibrate(pattern: number | number[]): void {
-  if (!hapticsEnabled) return;
-  try {
-    navigator.vibrate?.(pattern);
-  } catch {
-    // nicht unterstützt (z. B. iOS Safari)
-  }
-}

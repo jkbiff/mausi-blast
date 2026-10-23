@@ -41,7 +41,7 @@ src/core/            reine Spiellogik, testbar ohne Browser
   game.ts            Spielzustand, Züge
   rng.ts             seedbarer Zufall
 src/state/storage.ts Speichern/Laden (localStorage)
-src/ui/sound.ts      synthetisierte Sounds + Vibration
+src/ui/sound.ts      synthetisierte Sounds
 src/ui/effects.ts    Effekte: Zersplittern, Punktzahlen, Combo-Banner, Themenwechsel-Feier
 src/ui/skins.ts      Liste der 26 Themen (+ eigenes Foto)
 src/skins.css        Aussehen der Themen – erzeugt von scripts/gen-skins.py

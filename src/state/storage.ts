@@ -31,7 +31,6 @@ export const saveStats = (mode: GameMode, s: Stats) => write(`${KEY_STATS}:${mod
 
 export interface Settings {
   sound: boolean;
-  haptics: boolean;
   /** ID aus src/ui/skins.ts */
   skin: string;
   /** Bei „Alles weg!“ automatisch zum nächsten Blockdesign wechseln. */
@@ -40,7 +39,7 @@ export interface Settings {
   lastMode: GameMode;
 }
 
-const DEFAULT_SETTINGS: Settings = { sound: true, haptics: true, skin: DEFAULT_SKIN, skinCycle: true, lastMode: "standard" };
+const DEFAULT_SETTINGS: Settings = { sound: true, skin: DEFAULT_SKIN, skinCycle: true, lastMode: "standard" };
 
 function read<T>(key: string): T | null {
   try {

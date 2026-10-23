@@ -24,7 +24,6 @@ const bestEl = $("best");
 const gameOverEl = $("overlay-gameover");
 const settingsEl = $("overlay-settings");
 const soundOpt = $<HTMLInputElement>("opt-sound");
-const hapticsOpt = $<HTMLInputElement>("opt-haptics");
 const newGameBtn = $("btn-newgame");
 const comboMeter = $("combo-meter");
 const comboMeterText = $("combo-meter-text");
@@ -50,7 +49,6 @@ let gameOverTimer = 0;
 let deadFill: Map<number, number> | null = null;
 
 sfx.setSoundEnabled(settings.sound);
-sfx.setHapticsEnabled(settings.haptics);
 document.body.dataset.skin = settings.skin;
 let photo = store.loadPhoto();
 setPhoto(photo);
@@ -203,7 +201,6 @@ function setBest(): void {
       bestEl.parentElement!.classList.add("record");
       window.setTimeout(() => bestEl.parentElement!.classList.remove("record"), 1900);
       sfx.playRecord();
-      sfx.vibrate([20, 40, 20, 40, 20]);
     }, 900);
   }
 }
@@ -315,11 +312,9 @@ function commitMove(slot: number, row: number, col: number): void {
     const colorsAfter = new Set(state.board.filter(Boolean));
     if ([...colorsBefore].some((c) => !colorsAfter.has(c))) window.setTimeout(fx.colorGone, 150);
     sfx.playClear(res.linesCleared, res.combo);
-    sfx.vibrate(res.linesCleared > 1 ? [20, 30, 35] : 25);
     if (res.linesCleared >= 3) shake();
   } else {
     sfx.playPlace();
-    sfx.vibrate(8);
   }
 
   setBest();
@@ -336,7 +331,6 @@ function commitMove(slot: number, row: number, col: number): void {
  */
 function allClearSequence(res: MoveResult, color: number): void {
   sfx.playAllClear();
-  sfx.vibrate([30, 40, 30, 40, 80]);
   fx.flicker(res.clearedCells, 480);
 
   window.setTimeout(() => {
@@ -384,7 +378,6 @@ function scheduleGameOver(): void {
   gameOverTimer = window.setTimeout(() => {
     showNoSpace();
     sfx.playGameOver();
-    sfx.vibrate([60, 60, 120]);
     gameOverTimer = window.setTimeout(showGameOver, 2200);
   }, 450);
 }
@@ -601,7 +594,6 @@ $("btn-home-go").addEventListener("click", showStart);
 $("btn-settings").addEventListener("click", () => {
   sfx.unlockAudio();
   soundOpt.checked = settings.sound;
-  hapticsOpt.checked = settings.haptics;
   skinCycleOpt.checked = settings.skinCycle;
   renderSkins();
   newGameBtn.textContent = "New Game";
@@ -727,15 +719,12 @@ skinsEl.addEventListener("click", (e) => {
 });
 
 function updateSettings(): void {
-  settings = { ...settings, sound: soundOpt.checked, haptics: hapticsOpt.checked, skinCycle: skinCycleOpt.checked };
+  settings = { ...settings, sound: soundOpt.checked, skinCycle: skinCycleOpt.checked };
   store.saveSettings(settings);
   sfx.setSoundEnabled(settings.sound);
-  sfx.setHapticsEnabled(settings.haptics);
   if (settings.sound) sfx.playPickup();
-  if (settings.haptics) sfx.vibrate(15);
 }
 soundOpt.addEventListener("change", updateSettings);
-hapticsOpt.addEventListener("change", updateSettings);
 skinCycleOpt.addEventListener("change", updateSettings);
 
 // ---------- Start ----------
