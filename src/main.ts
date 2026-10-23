@@ -476,47 +476,78 @@ interface Drag {
   w: number;
   h: number;
   anchor: { r: number; c: number } | null;
+  /** Spielfeld-Geometrie, einmal beim Aufnehmen gemessen (kein Layout-Lesen während des Ziehens). */
+  originX: number;
+  originY: number;
+  pitch: number;
+  /** Letzte Fingerposition; angewendet wird einmal pro Bild (requestAnimationFrame). */
+  x: number;
+  y: number;
+  frame: number;
 }
 
 let drag: Drag | null = null;
 
-function findAnchor(piece: Piece, left: number, top: number): { r: number; c: number } | null {
-  const r0 = cells[0].getBoundingClientRect();
-  const pitch = cells[1].getBoundingClientRect().left - r0.left;
-  const fc = (left - r0.left) / pitch;
-  const fr = (top - r0.top) / pitch;
-  const options: { r: number; c: number; d: number }[] = [];
-  for (const r of [Math.floor(fr), Math.ceil(fr)]) {
-    for (const c of [Math.floor(fc), Math.ceil(fc)]) {
+/** Abstand der Stein-Unterkante über dem Finger, in Feldern (wie im Original). */
+const LIFT_CELLS = 1.8;
+
+/**
+ * Nächste gültige Position für die linke obere Ecke des Steins. Sucht rund um die gerundete
+ * Position (bis knapp eine Feldbreite entfernt) und bleibt bei der bisherigen Position, solange
+ * der Finger nicht deutlich weiterzieht – so springt die Vorschau nicht hin und her.
+ */
+function findAnchor(d: Drag, left: number, top: number): { r: number; c: number } | null {
+  const fc = (left - d.originX) / d.pitch;
+  const fr = (top - d.originY) / d.pitch;
+  const cur = d.anchor;
+  if (cur && Math.abs(cur.r - fr) < 0.65 && Math.abs(cur.c - fc) < 0.65 && canPlace(state.board, d.piece, cur.r, cur.c)) return cur;
+  let best: { r: number; c: number; d: number } | null = null;
+  const r0 = Math.round(fr);
+  const c0 = Math.round(fc);
+  for (let r = r0 - 1; r <= r0 + 1; r++) {
+    for (let c = c0 - 1; c <= c0 + 1; c++) {
       const dr = Math.abs(r - fr);
       const dc = Math.abs(c - fc);
-      if (dr < 0.8 && dc < 0.8) options.push({ r, c, d: dr * dr + dc * dc });
+      if (dr >= 0.95 || dc >= 0.95) continue;
+      const dist = dr * dr + dc * dc;
+      if ((!best || dist < best.d) && canPlace(state.board, d.piece, r, c)) best = { r, c, d: dist };
     }
   }
-  options.sort((a, b) => a.d - b.d);
-  return options.find((o) => canPlace(state.board, piece, o.r, o.c)) ?? null;
+  return best && { r: best.r, c: best.c };
 }
 
-function moveDrag(x: number, y: number): void {
-  if (!drag) return;
-  const left = x - drag.w / 2;
-  const top = y - drag.lift - drag.h / 2;
-  drag.layer.style.transform = `translate(${left}px, ${top}px)`;
-  const anchor = findAnchor(drag.piece, left, top);
-  const same = anchor && drag.anchor && anchor.r === drag.anchor.r && anchor.c === drag.anchor.c;
-  if (same || (!anchor && !drag.anchor)) return;
-  drag.anchor = anchor;
+function applyDrag(): void {
+  const d = drag;
+  if (!d) return;
+  d.frame = 0;
+  const left = d.x - d.w / 2;
+  const top = d.y - d.lift - d.h / 2;
+  d.layer.style.transform = `translate3d(${left}px, ${top}px, 0)`;
+  const anchor = findAnchor(d, left, top);
+  const same = anchor && d.anchor && anchor.r === d.anchor.r && anchor.c === d.anchor.c;
+  if (same || (!anchor && !d.anchor)) return;
+  d.anchor = anchor;
   if (anchor) {
-    const res = place(state.board, drag.piece, anchor.r, anchor.c, drag.color);
-    renderBoard({ ghost: res.placedCells, color: drag.color, clearRows: res.clearedRows, clearCols: res.clearedCols });
+    const res = place(state.board, d.piece, anchor.r, anchor.c, d.color);
+    renderBoard({ ghost: res.placedCells, color: d.color, clearRows: res.clearedRows, clearCols: res.clearedCols });
   } else {
     renderBoard();
   }
 }
 
+function moveDrag(x: number, y: number): void {
+  if (!drag) return;
+  drag.x = x;
+  drag.y = y;
+  if (!drag.frame) drag.frame = requestAnimationFrame(applyDrag);
+}
+
 function endDrag(): void {
   if (!drag) return;
   const d = drag;
+  // letzte Fingerposition noch anwenden, damit genau dort abgelegt wird, wo die Vorschau war
+  cancelAnimationFrame(d.frame);
+  applyDrag();
   drag = null;
   if (d.anchor) {
     d.layer.remove();
@@ -556,14 +587,19 @@ trayEl.addEventListener("pointerdown", (e) => {
 
   const w = piece.w * cellPx + (piece.w - 1) * gapPx;
   const h = piece.h * cellPx + (piece.h - 1) * gapPx;
-  // Bei Touch springt der Stein deutlich über den Finger, damit der Daumen nichts verdeckt.
-  const lift = e.pointerType === "mouse" ? 0 : h / 2 + cellPx * 2.3;
+  // Bei Touch springt der Stein über den Finger, damit der Daumen nichts verdeckt.
+  const lift = e.pointerType === "mouse" ? 0 : h / 2 + cellPx * LIFT_CELLS;
   // Sprung startet in Tray-Größe am Finger (siehe @keyframes grab)
   el.style.setProperty("--lift", `${lift}px`);
   el.style.setProperty("--s0", String(trayCellPx / cellPx));
-  drag = { slot, piece, color: item.color, layer, pointerId: e.pointerId, lift, w, h, anchor: null };
+  const c0 = cells[0].getBoundingClientRect();
+  const pitch = cells[1].getBoundingClientRect().left - c0.left;
+  drag = {
+    slot, piece, color: item.color, layer, pointerId: e.pointerId, lift, w, h, anchor: null,
+    originX: c0.left, originY: c0.top, pitch, x: e.clientX, y: e.clientY, frame: 0,
+  };
   slotEl.classList.add("lifted");
-  moveDrag(e.clientX, e.clientY);
+  applyDrag();
   const sr = slotEl.getBoundingClientRect();
   fx.motifBurst(sr.left + sr.width / 2, sr.top + sr.height / 2);
   sfx.playPickup();

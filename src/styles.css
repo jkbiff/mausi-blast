@@ -839,8 +839,9 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
 .drag-layer .piece {
   animation: grab 0.09s ease-out;
   transform-origin: 50% 100%;
-  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.4));
 }
+/* Leichter Schatten pro Block statt eines teuren Filters über den ganzen Stein */
+.drag-layer .block { box-shadow: var(--blk-shadow), 0 6px 10px rgba(0, 0, 0, 0.3); }
 .drag-layer.returning { transition: transform 0.14s ease-in, opacity 0.14s; opacity: 0.6; }
 @keyframes grab {
   from { transform: translateY(var(--lift, 0px)) scale(var(--s0, 0.55)); }
