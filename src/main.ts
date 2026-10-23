@@ -333,7 +333,8 @@ function commitMove(slot: number, row: number, col: number): void {
  */
 function allClearSequence(res: MoveResult, color: number): void {
   sfx.playAllClear();
-  fx.flicker(res.clearedCells, 480);
+  // Kompakt (≈ 1 s), damit das neue Thema steht, bevor man den nächsten Stein legt.
+  fx.flicker(res.clearedCells, 160);
 
   window.setTimeout(() => {
     fx.shatter(res.clearedCells, () => String(color), res.clearedRows, res.placedCells);
@@ -345,8 +346,8 @@ function allClearSequence(res: MoveResult, color: number): void {
     // Kurz genug, dass es vor dem Themenwechsel verschwindet (Name des neuen Themas folgt)
     const parts = [fx.text3d("All Clear!", "rainbow")];
     if (res.combo >= 2) parts.push(...fx.comboContent(res.combo));
-    fx.banner(parts, "huge", 720);
-  }, 480);
+    fx.banner(parts, "huge", 900);
+  }, 160);
 
   window.setTimeout(() => {
     let title: string | null = null;
@@ -358,10 +359,10 @@ function allClearSequence(res: MoveResult, color: number): void {
     boardWrap.classList.add("neon");
     fx.curtain();
     fx.celebrate(title);
-  }, 1150);
-  window.setTimeout(fx.shine, 2150);
-  window.setTimeout(fx.themeIntro, 2650);
-  window.setTimeout(() => boardWrap.classList.remove("neon"), 3800);
+  }, 300);
+  window.setTimeout(fx.shine, 750);
+  window.setTimeout(fx.themeIntro, 950);
+  window.setTimeout(() => boardWrap.classList.remove("neon"), 1900);
 }
 
 /** Wie im Original: Band „Kein Platz mehr“ über dem Tray, leere Felder füllen sich bunt, dann das Ergebnis. */

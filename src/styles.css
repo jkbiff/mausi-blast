@@ -423,7 +423,7 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
 }
 .curtain {
   position: absolute;
-  animation: curtain-in 0.18s ease-out var(--din) both, curtain-out 0.2s ease-in var(--dout) forwards;
+  animation: curtain-in 0.12s ease-out var(--din) both, curtain-out 0.14s ease-in var(--dout) forwards;
 }
 @keyframes curtain-in {
   from { transform: translateY(-35%) scale(0.6); opacity: 0; }
@@ -759,20 +759,22 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
 .theme-title {
   position: absolute;
   left: 50%;
-  top: 38%;
+  /* über dem Punktestand, damit es „All Clear!“ auf dem Feld nicht überdeckt */
+  top: calc(env(safe-area-inset-top) + 92px);
   transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  animation: title-zoom 2.3s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+  z-index: 2;
+  animation: title-zoom 1.5s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
 }
-.theme-title .t3d { font-size: min(64px, 16vw); }
+.theme-title .t3d { font-size: min(52px, 13vw); }
 .theme-title .t3d.sub { font-size: 22px; }
 .theme-title .name { display: flex; align-items: center; gap: 4px; }
 /* Wie im Original: Name kommt riesig ins Bild und schrumpft auf normale Größe */
 @keyframes title-zoom {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(3.2); }
-  12% { opacity: 1; transform: translate(-50%, -50%) scale(2.4); }
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(2.2); }
+  12% { opacity: 1; transform: translate(-50%, -50%) scale(1.7); }
   30% { transform: translate(-50%, -50%) scale(0.95); }
   38% { transform: translate(-50%, -50%) scale(1); }
   85% { opacity: 1; }

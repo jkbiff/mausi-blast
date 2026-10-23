@@ -313,11 +313,11 @@ export function curtain(): void {
       top: `${r.y}px`,
       width: `${r.w}px`,
       height: `${r.h}px`,
-      "--din": `${(N - 1 - row) * 55}ms`,
-      "--dout": `${950 + row * 55}ms`,
+      "--din": `${(N - 1 - row) * 22}ms`,
+      "--dout": `${330 + row * 22}ms`,
     });
     b.dataset.c = "1";
-    spawn(b, 950 + N * 55 + 260);
+    spawn(b, 330 + N * 22 + 180);
   }
 }
 
@@ -355,8 +355,8 @@ export function celebrate(themeName: string | null): void {
         left: `${rand(-5, 95)}%`,
         "--w": `${rand(60, 110)}px`,
         "--b": BALLOONS[k % BALLOONS.length],
-        "--t": `${rand(1.8, 2.6)}s`,
-        "--delay": `${rand(0, 0.5)}s`,
+        "--t": `${rand(1.0, 1.4)}s`,
+        "--delay": `${rand(0, 0.2)}s`,
         "--sway": `${rand(-40, 40)}px`,
       }),
     );
@@ -366,8 +366,8 @@ export function celebrate(themeName: string | null): void {
       div("confetti", {
         left: `${rand(0, 100)}%`,
         "--b": BALLOONS[k % BALLOONS.length],
-        "--t": `${rand(1.6, 2.8)}s`,
-        "--delay": `${rand(0.2, 1)}s`,
+        "--t": `${rand(1.2, 1.8)}s`,
+        "--delay": `${rand(0, 0.4)}s`,
         "--sway": `${rand(-80, 80)}px`,
       }),
     );
@@ -380,5 +380,5 @@ export function celebrate(themeName: string | null): void {
     layer.appendChild(title);
   }
   document.body.appendChild(layer);
-  window.setTimeout(() => layer.remove(), 3400);
+  window.setTimeout(() => layer.remove(), 2300);
 }
