@@ -1,6 +1,6 @@
 // Offline-Cache für Mausi Blast.
 // HTML: erst Netz (damit Updates ankommen), sonst Cache. Alles andere: Cache, im Hintergrund aktualisieren.
-const CACHE = "mausi-blast-v23";
+const CACHE = "mausi-blast-v24";
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon.svg", "./icons/icon-192.png"];
 
 self.addEventListener("install", (e) => {

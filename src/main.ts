@@ -50,6 +50,8 @@ let deadFill: Map<number, number> | null = null;
 
 sfx.setSoundEnabled(settings.sound);
 document.body.dataset.skin = settings.skin;
+// auch am <html>, damit dessen Grundfarbe (--page-end) zum Thema passt
+document.documentElement.dataset.skin = settings.skin;
 let photo = store.loadPhoto();
 setPhoto(photo);
 
@@ -670,6 +672,7 @@ function applySkin(skin: string): void {
   settings = { ...settings, skin };
   store.saveSettings(settings);
   document.body.dataset.skin = skin;
+  document.documentElement.dataset.skin = skin;
   renderSkins();
 }
 

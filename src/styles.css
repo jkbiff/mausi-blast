@@ -40,6 +40,11 @@
 
 * { box-sizing: border-box; }
 
+html {
+  /* iOS zeigt unter dem Home-Balken die Grundfarbe der Seite – passend zum Thema */
+  background-color: var(--page-end, #5a2244);
+}
+
 html, body {
   margin: 0;
   height: 100%;
@@ -50,7 +55,7 @@ html, body {
 
 body {
   background: var(--page-bg);
-  background-color: #5a2244;
+  background-color: var(--page-end, #5a2244);
   color: var(--text);
   font-family: "Nunito", ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-weight: 800;
@@ -70,7 +75,7 @@ body::before {
   left: 0;
   right: 0;
   background: var(--page-bg);
-  background-color: #5a2244;
+  background-color: var(--page-end, #5a2244);
   pointer-events: none;
 }
 
@@ -942,7 +947,7 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
   place-items: center;
   padding: calc(env(safe-area-inset-top) + 16px) 20px calc(env(safe-area-inset-bottom) + 16px);
   background: var(--page-bg);
-  background-color: #5a2244;
+  background-color: var(--page-end, #5a2244);
   animation: fade-in 0.3s ease-out;
 }
 .start.hidden { display: none; }

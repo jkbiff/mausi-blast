@@ -248,7 +248,7 @@ KEYS = [("bg", "blk-bg"), ("gloss", "blk-gloss"), ("shadow", "blk-shadow"), ("ra
         ("bevel", "blk-bevel"), ("border", "blk-border"), ("deco", "blk-deco"), ("deco_inset", "blk-deco-inset"),
         ("deco_clip", "blk-deco-clip"), ("deco_border", "blk-deco-border"), ("deco_shadow", "blk-deco-shadow"),
         ("page", "page-bg"), ("board", "board-bg"), ("empty", "cell-empty"), ("line", "cell-line"),
-        ("accent", "fx-accent"), ("motif", "motif")]
+        ("accent", "fx-accent"), ("motif", "motif"), ("page_end", "page-end")]
 
 # ---------- Alles in Rosa ----------
 # Jede Farbe wird in einen Rosaton umgerechnet; Helligkeit/Sättigung bleiben, damit die Texturen
@@ -351,6 +351,8 @@ for i, (name, d) in enumerate(T.items()):
         d[key] = pinkify(d[key], base)
     for key in ("page", "board"):
         d[key] = pinkify(d[key], base, 0.3)
+    # Farbe, mit der der Hintergrund unten endet – Grundfarbe der Seite (iOS zeigt sie unter dem Home-Balken)
+    d["page_end"] = re.findall(r"#[0-9a-fA-F]{6}|rgba?\([^)]*\)", d["page"])[-1]
 
 out = ["/* Automatisch erzeugt von scripts/gen-skins.py – dort ändern, nicht hier. */", ""]
 for name, d in T.items():

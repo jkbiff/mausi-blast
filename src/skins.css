@@ -28,6 +28,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ff66ab;
   --motif: "★";
+  --page-end: #a23163;
 }
 
 /* Jade: weiß-grüner Stein auf grünem Marmor */
@@ -61,6 +62,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ff6d8e;
   --motif: "♣";
+  --page-end: #552634;
 }
 
 /* Strick: Wollmaschen auf dunkelrotem Strickgrund */
@@ -94,6 +96,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffb3e3;
   --motif: "✿";
+  --page-end: #7f285d;
 }
 
 /* Keramik: glasierte Fliesen mit Haarrissen, lila-blauer Hintergrund */
@@ -126,6 +129,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ff7f8d;
   --motif: "◆";
+  --page-end: #e43b5a;
 }
 
 /* Herzkekse: Mürbeteig und Rosa mit eingeprägtem Herz auf Schokolade */
@@ -156,6 +160,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ff9cd6;
   --motif: "✿";
+  --page-end: #4b162d;
 }
 
 /* Juwelen: geschliffene Achteck-Steine in Silberfassung */
@@ -186,6 +191,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffb3d4;
   --motif: "◆";
+  --page-end: #531927;
 }
 
 /* Gold: Barren auf Holz */
@@ -216,6 +222,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffa0ac;
   --motif: "✦";
+  --page-end: #8d231d;
 }
 
 /* Bunt: flache, leuchtende Farben */
@@ -245,6 +252,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffffff;
   --motif: "●";
+  --page-end: #a0386f;
 }
 
 /* Wassermelone: Fruchtfleisch mit Kernen und Schale */
@@ -280,6 +288,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ff7a9c;
   --motif: "●";
+  --page-end: #602635;
 }
 
 /* Ziegel: Mauersteine mit Fugen, hellblauer Himmel */
@@ -312,6 +321,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ff8a98;
   --motif: "■";
+  --page-end: #e77680;
 }
 
 /* Plüsch: flauschiges Fell */
@@ -345,6 +355,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffb0dc;
   --motif: "●";
+  --page-end: #7e344d;
 }
 
 /* Leder: genäht, mit Ziernaht */
@@ -376,6 +387,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffc9ef;
   --motif: "✚";
+  --page-end: #a96e9a;
 }
 
 /* Kacheln: rosa und cremefarbene Fliesen mit vertiefter Mitte */
@@ -405,6 +417,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffd6da;
   --motif: "✿";
+  --page-end: #d7526d;
 }
 
 /* Eiscreme: Kugel mit Streuseln über Waffel */
@@ -445,6 +458,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffd1ef;
   --motif: "●";
+  --page-end: #7c3a5b;
 }
 
 /* Gelee: glänzend und durchscheinend */
@@ -475,6 +489,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffffff;
   --motif: "●";
+  --page-end: #bb3c66;
 }
 
 /* Roboter: Blechpaneele mit Schrauben und Lüftungsschlitzen */
@@ -508,6 +523,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffa8e1;
   --motif: "⚙";
+  --page-end: #8c6e86;
 }
 
 /* Käse: mit Löchern */
@@ -541,6 +557,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffa0c9;
   --motif: "●";
+  --page-end: #8c2a5c;
 }
 
 /* Marmor: weißer Stein mit grauen Adern */
@@ -573,6 +590,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffffff;
   --motif: "✦";
+  --page-end: #a15769;
 }
 
 /* Opal: schillernd in Pastell */
@@ -603,6 +621,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffffff;
   --motif: "✦";
+  --page-end: #d678b8;
 }
 
 /* Matt: einfache, satte Farben */
@@ -632,6 +651,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffffff;
   --motif: "■";
+  --page-end: #b3324b;
 }
 
 /* Holz: bemalte Latten mit Maserung */
@@ -663,6 +683,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffb0dd;
   --motif: "●";
+  --page-end: #ac4182;
 }
 
 /* Papier: zerknittertes Pergament */
@@ -695,6 +716,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffcfe3;
   --motif: "✦";
+  --page-end: #583344;
 }
 
 /* Kekse: Cracker mit Löchern */
@@ -725,6 +747,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffc0c8;
   --motif: "●";
+  --page-end: #ab374c;
 }
 
 /* Ton: erdige, matte Farben */
@@ -756,6 +779,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffa8e0;
   --motif: "●";
+  --page-end: #702e4b;
 }
 
 /* Spiegelei: Eigelb auf weißer Fliese */
@@ -787,6 +811,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ff4078;
   --motif: "●";
+  --page-end: #562e37;
 }
 
 /* Karo: Stoff mit Vichy-Muster */
@@ -818,6 +843,7 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffffff;
   --motif: "♥";
+  --page-end: #da849e;
 }
 
 /* Eigenes Foto: auf dem Spielfeld zeigt jeder Block seinen Bildausschnitt */
@@ -847,4 +873,5 @@
   --cell-line: rgba(0, 0, 0, 0.35);
   --fx-accent: #ffc2e4;
   --motif: "♥";
+  --page-end: #6d2a47;
 }
