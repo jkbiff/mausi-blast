@@ -250,6 +250,108 @@ KEYS = [("bg", "blk-bg"), ("gloss", "blk-gloss"), ("shadow", "blk-shadow"), ("ra
         ("page", "page-bg"), ("board", "board-bg"), ("empty", "cell-empty"), ("line", "cell-line"),
         ("accent", "fx-accent"), ("motif", "motif")]
 
+# ---------- Alles in Rosa ----------
+# Jede Farbe wird in einen Rosaton umgerechnet; Helligkeit/Sättigung bleiben, damit die Texturen
+# erkennbar bleiben. Neutrale Töne (Weiß, Grau, Schwarz für Glanz und Schatten) bleiben unverändert.
+import colorsys
+import re
+
+# Acht gut unterscheidbare Rosatöne für die Blöcke: (Farbton°, Sättigung, Helligkeit)
+PINKS = [
+    (330, 0.92, 0.60),  # Pink
+    (346, 0.88, 0.70),  # Rosé
+    (314, 0.72, 0.52),  # Fuchsia
+    (352, 0.85, 0.82),  # Blush
+    (338, 0.70, 0.42),  # Himbeere
+    (8, 0.90, 0.74),    # Pfirsichrosa
+    (298, 0.50, 0.66),  # Orchidee
+    (322, 0.95, 0.78),  # Bubblegum
+]
+# Grund-Rosaton je Thema für Hintergrund, Spielfeld und Texturen (reihum, damit jedes Thema anders wirkt)
+BASE_HUES = [336, 345, 326, 352, 330, 340, 356, 328, 346, 348, 334, 322, 350, 326, 342, 318]
+
+
+def hex_to_rgb(h):
+    h = h.lstrip("#")
+    if len(h) == 3:
+        h = "".join(c * 2 for c in h)
+    return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+
+
+def to_hex(rgb):
+    return "#" + "".join(f"{max(0, min(255, round(v))):02x}" for v in rgb)
+
+
+def hls(rgb):
+    return colorsys.rgb_to_hls(*(v / 255 for v in rgb))
+
+
+def from_hls(h, l, s):
+    return tuple(v * 255 for v in colorsys.hls_to_rgb(h % 1, l, s))
+
+
+def pink_rgb(rgb, base_hue, tint=0.0):
+    """Farbe in Rosa umrechnen: Farbton um den Grundton des Themas, Rest bleibt.
+    tint > 0 färbt auch neutrale Töne (Grau, Weiß) zart ein – für Flächen und Steine."""
+    h, l, s = hls(rgb)
+    if l < 0.04 or l > 0.985:
+        return rgb
+    if s < 0.1:
+        if not tint:
+            return rgb
+        return from_hls(base_hue / 360, l, max(s, tint))
+    # leichte Variation je nach ursprünglichem Farbton, damit Verläufe lebendig bleiben
+    offset = ((h * 360 + 30) % 60 - 30) / 4
+    return from_hls((base_hue + offset) / 360, l, min(1.0, s * 1.05))
+
+
+def pinkify(text, base_hue, tint=0.0):
+    def hex_repl(m):
+        return to_hex(pink_rgb(hex_to_rgb(m.group(1)), base_hue, tint))
+
+    def enc_repl(m):
+        return "%23" + to_hex(pink_rgb(hex_to_rgb(m.group(1)), base_hue))[1:]
+
+    def rgba_repl(m):
+        r, g, b = (int(m.group(i)) for i in (2, 3, 4))
+        nr, ng, nb = (round(v) for v in pink_rgb((r, g, b), base_hue, tint))
+        return f"{m.group(1)}({nr}, {ng}, {nb}{m.group(5) or ''})"
+
+    text = re.sub(r"%23([0-9a-fA-F]{6})", enc_repl, text)
+    text = re.sub(r"#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b", hex_repl, text)
+    return re.sub(r"(rgba?)\((\d+),\s*(\d+),\s*(\d+)(,\s*[\d.]+)?\)", rgba_repl, text)
+
+
+def pink_palette(palette, base_hue):
+    """Bunte Paletten → acht Rosatöne (Stil des Themas bleibt); einfarbige → Grund-Rosaton."""
+    cols = [hls(hex_to_rgb(c)) for c in palette]
+    hues = {round(h * 12) % 12 for h, l, s in cols if s > 0.25}
+    if len(hues) >= 3:
+        avg_l = sum(l for h, l, s in cols) / len(cols)
+        avg_s = sum(s for h, l, s in cols) / len(cols)
+        out = []
+        for i, (ph, ps, pl) in enumerate(PINKS):
+            l = pl + (avg_l - 0.55) * 0.6
+            s = ps * 0.6 + avg_s * 0.4
+            out.append(to_hex(from_hls(ph / 360, min(0.9, max(0.3, l)), min(1.0, s))))
+        return out
+    out = []
+    for c in palette:
+        h, l, s = hls(pink_rgb(hex_to_rgb(c), base_hue, 0.55))
+        # sehr helle Steine (Jade, Marmor …) etwas abdunkeln, damit das Rosa sichtbar wird
+        out.append(to_hex(from_hls(h, min(l, 0.86), max(s, 0.55))))
+    return out
+
+
+for i, (name, d) in enumerate(T.items()):
+    base = BASE_HUES[i % len(BASE_HUES)]
+    d["palette"] = pink_palette(d["palette"], base)
+    d["bg"] = pinkify(d["bg"], base, 0.5)
+    for key in ("gloss", "shadow", "border", "deco", "deco_border", "deco_shadow", "empty", "line", "accent"):
+        d[key] = pinkify(d[key], base)
+    for key in ("page", "board"):
+        d[key] = pinkify(d[key], base, 0.3)
+
 out = ["/* Automatisch erzeugt von scripts/gen-skins.py – dort ändern, nicht hier. */", ""]
 for name, d in T.items():
     out.append(f"/* {d['comment']} */")

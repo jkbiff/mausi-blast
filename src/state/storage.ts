@@ -1,5 +1,5 @@
 import type { GameMode } from "../config";
-import { isValidState, type GameState } from "../core/game";
+import { isValidState, modeOf, type GameState } from "../core/game";
 import { DEFAULT_SKIN, SKIN_IDS } from "../ui/skins";
 
 const KEY_GAME = "mausi-blast:game";
@@ -36,9 +36,11 @@ export interface Settings {
   skin: string;
   /** Bei „Alles weg!“ automatisch zum nächsten Blockdesign wechseln. */
   skinCycle: boolean;
+  /** Zuletzt gespielter Modus (Hintergrund des Startbildschirms). */
+  lastMode: GameMode;
 }
 
-const DEFAULT_SETTINGS: Settings = { sound: true, haptics: true, skin: DEFAULT_SKIN, skinCycle: true };
+const DEFAULT_SETTINGS: Settings = { sound: true, haptics: true, skin: DEFAULT_SKIN, skinCycle: true, lastMode: "standard" };
 
 function read<T>(key: string): T | null {
   try {
@@ -57,23 +59,27 @@ function write(key: string, value: unknown): void {
   }
 }
 
-export function loadGame(): GameState | null {
-  const s = read<unknown>(KEY_GAME);
-  return isValidState(s) ? s : null;
+/** Jeder Modus hat seinen eigenen Spielstand; der alte gemeinsame Spielstand zählt für seinen Modus. */
+export function loadGame(mode: GameMode): GameState | null {
+  const own = read<unknown>(`${KEY_GAME}:${mode}`);
+  if (isValidState(own)) return own;
+  const legacy = read<unknown>(KEY_GAME);
+  return isValidState(legacy) && modeOf(legacy) === mode ? legacy : null;
 }
 
-export const saveGame = (state: GameState) => write(KEY_GAME, state);
+export const saveGame = (state: GameState) => write(`${KEY_GAME}:${modeOf(state)}`, state);
 
 export const loadBest = (mode: GameMode): number => readPerMode<number>(KEY_BEST, mode) ?? 0;
 export const saveBest = (mode: GameMode, best: number) => write(`${KEY_BEST}:${mode}`, best);
 
 /** Rekord zu Beginn der laufenden Runde – damit „Neuer Rekord!“ auch nach einem Neuladen stimmt. */
-export const loadRoundBest = (): number | null => read<number>(KEY_ROUND_BEST);
-export const saveRoundBest = (best: number) => write(KEY_ROUND_BEST, best);
+export const loadRoundBest = (mode: GameMode): number | null => read<number>(`${KEY_ROUND_BEST}:${mode}`);
+export const saveRoundBest = (mode: GameMode, best: number) => write(`${KEY_ROUND_BEST}:${mode}`, best);
 
 export function loadSettings(): Settings {
   const s = { ...DEFAULT_SETTINGS, ...read<Partial<Settings>>(KEY_SETTINGS) };
   if (!SKIN_IDS.includes(s.skin)) s.skin = DEFAULT_SKIN;
+  if (s.lastMode !== "standard" && s.lastMode !== "hard") s.lastMode = "standard";
   return s;
 }
 export const saveSettings = (s: Settings) => write(KEY_SETTINGS, s);

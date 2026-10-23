@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#4258c4" />
+    <meta name="theme-color" content="#7a2850" />
     <meta name="description" content="Mausi Blast – Block-Puzzle ohne Werbung." />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -48,6 +48,25 @@
 
     <div id="fx-global"></div>
 
+    <div id="start" class="start">
+      <div class="start-inner">
+        <img class="start-logo" src="./icons/icon.svg" alt="" />
+        <h1 class="start-title t3d rose">Mausi Blast</h1>
+        <button class="mode-card" data-mode="standard">
+          <span class="mode-name">Standard</span>
+          <span class="mode-sub">Relaxed – lots of All Clears</span>
+          <span class="mode-best">Best <b id="start-best-standard">0</b></span>
+          <span class="mode-cta" id="start-cta-standard">Play</span>
+        </button>
+        <button class="mode-card hard" data-mode="hard">
+          <span class="mode-name">Hard</span>
+          <span class="mode-sub">The real challenge</span>
+          <span class="mode-best">Best <b id="start-best-hard">0</b></span>
+          <span class="mode-cta" id="start-cta-hard">Play</span>
+        </button>
+      </div>
+    </div>
+
     <div id="overlay-gameover" class="overlay hidden">
       <div class="panel">
         <h2>Game Over</h2>
@@ -58,20 +77,13 @@
         <div class="go-best">Best: <span id="go-best">0</span></div>
         <div class="go-stats">Best Combo: <span id="go-best-combo">0</span> · All Clears: <span id="go-all-clears">0</span></div>
         <button id="btn-restart" class="btn primary">Play Again</button>
+        <button id="btn-home-go" class="btn">Home</button>
       </div>
     </div>
 
     <div id="overlay-settings" class="overlay hidden">
       <div class="panel">
         <h2>Menu</h2>
-        <div class="mode-row">
-          <span>Mode</span>
-          <div class="mode-switch" id="mode-switch">
-            <button data-mode="standard">Standard</button>
-            <button data-mode="hard">Hard</button>
-          </div>
-        </div>
-        <p id="mode-hint" class="mode-hint hidden">Tap again to start a new game in this mode.</p>
         <label class="toggle"><span>Sound</span><input type="checkbox" id="opt-sound" /><i></i></label>
         <label class="toggle"><span>Vibration</span><input type="checkbox" id="opt-haptics" /><i></i></label>
         <div class="skin-row">
@@ -83,6 +95,7 @@
         <label class="toggle small"><span>New skin on „All Clear!“</span><input type="checkbox" id="opt-skin-cycle" /><i></i></label>
         <button id="btn-newgame" class="btn">New Game</button>
         <button id="btn-close-settings" class="btn primary">Resume</button>
+        <button id="btn-home" class="btn">Home</button>
         <p class="hint">Tipp: Im Browser „Zum Home-Bildschirm“ wählen – dann startet Mausi Blast wie eine App, auch offline.</p>
       </div>
     </div>

@@ -35,14 +35,14 @@ const photoInput = $<HTMLInputElement>("photo-input");
 
 // ---------- Zustand ----------
 
-let state: GameState = store.loadGame() ?? newGame(randomSeed(), "standard");
+let settings = store.loadSettings();
+// Hinter dem Startbildschirm liegt die zuletzt gespielte Runde; die eigentliche Wahl trifft man dort.
+let state: GameState = store.loadGame(settings.lastMode) ?? newGame(randomSeed(), settings.lastMode);
 let best = Math.max(store.loadBest(modeOf(state)), state.score);
 /** Rekord zu Beginn der Runde – für „Neuer Rekord!“. */
-let bestAtStart = store.loadRoundBest() ?? store.loadBest(modeOf(state));
-store.saveRoundBest(bestAtStart);
+let bestAtStart = store.loadRoundBest(modeOf(state)) ?? store.loadBest(modeOf(state));
 /** „Neuer Rekord!“ wird pro Runde nur einmal gefeiert. */
 let recordCelebrated = bestAtStart > 0 && state.score > bestAtStart;
-let settings = store.loadSettings();
 let stats = store.loadStats(modeOf(state));
 let shownScore = state.score;
 let gameOverTimer = 0;
@@ -410,28 +410,64 @@ function showGameOver(): void {
   gameOverEl.classList.remove("hidden");
 }
 
-function startNewGame(mode: GameMode = modeOf(state)): void {
+/** Macht `next` zur aktiven Runde (neu oder fortgesetzt) und lädt Highscore/Statistik ihres Modus. */
+function activate(next: GameState, fresh: boolean): void {
   window.clearTimeout(gameOverTimer);
-  state = newGame(randomSeed(), mode);
-  best = store.loadBest(mode);
+  state = next;
+  const mode = modeOf(state);
+  best = Math.max(store.loadBest(mode), state.score);
   stats = store.loadStats(mode);
-  bestEl.textContent = String(best);
-  renderModeBadge();
-  bestAtStart = best;
-  store.saveRoundBest(bestAtStart);
-  recordCelebrated = false;
+  bestAtStart = fresh ? best : (store.loadRoundBest(mode) ?? best);
+  store.saveRoundBest(mode, bestAtStart);
+  recordCelebrated = bestAtStart > 0 && state.score > bestAtStart;
   deadFill = null;
   noSpaceEl.classList.add("hidden");
-  shownScore = 0;
+  shownScore = state.score;
+  scoreEl.textContent = String(state.score);
   store.saveGame(state);
+  settings = { ...settings, lastMode: mode };
+  store.saveSettings(settings);
   gameOverEl.classList.add("hidden");
   settingsEl.classList.add("hidden");
   fxEl.replaceChildren();
+  bestEl.textContent = String(best);
+  renderModeBadge();
   renderBoard();
   renderComboMeter();
   renderTray(true);
-  animateScore();
 }
+
+function startNewGame(mode: GameMode = modeOf(state)): void {
+  activate(newGame(randomSeed(), mode), true);
+}
+
+// ---------- Startbildschirm ----------
+
+const startEl = $("start");
+
+function showStart(): void {
+  store.saveGame(state);
+  for (const mode of ["standard", "hard"] as const) {
+    $(`start-best-${mode}`).textContent = String(store.loadBest(mode));
+    const saved = mode === modeOf(state) ? state : store.loadGame(mode);
+    $(`start-cta-${mode}`).textContent = saved && !saved.gameOver && saved.score > 0 ? "Continue" : "Play";
+  }
+  settingsEl.classList.add("hidden");
+  gameOverEl.classList.add("hidden");
+  startEl.classList.remove("hidden");
+}
+
+/** Modus gewählt: laufende Runde dieses Modus fortsetzen, sonst neu starten. */
+startEl.addEventListener("click", (e) => {
+  const mode = (e.target as HTMLElement).closest<HTMLButtonElement>(".mode-card")?.dataset.mode as GameMode | undefined;
+  if (!mode) return;
+  sfx.unlockAudio();
+  sfx.playPickup();
+  const saved = mode === modeOf(state) ? state : store.loadGame(mode);
+  if (saved && !saved.gameOver) activate(saved, false);
+  else startNewGame(mode);
+  startEl.classList.add("hidden");
+});
 
 // ---------- Drag & Drop ----------
 
@@ -559,6 +595,8 @@ window.addEventListener("pointercancel", (e) => {
 // ---------- Menüs ----------
 
 $("btn-restart").addEventListener("click", () => startNewGame());
+$("btn-home").addEventListener("click", showStart);
+$("btn-home-go").addEventListener("click", showStart);
 
 $("btn-settings").addEventListener("click", () => {
   sfx.unlockAudio();
@@ -566,8 +604,6 @@ $("btn-settings").addEventListener("click", () => {
   hapticsOpt.checked = settings.haptics;
   skinCycleOpt.checked = settings.skinCycle;
   renderSkins();
-  pendingMode = null;
-  renderModeSwitch();
   newGameBtn.textContent = "New Game";
   newGameBtn.classList.remove("danger");
   settingsEl.classList.remove("hidden");
@@ -591,38 +627,12 @@ newGameBtn.addEventListener("click", () => {
 
 // ---------- Modus ----------
 
-const modeSwitch = $("mode-switch");
-const modeHint = $("mode-hint");
-let pendingMode: GameMode | null = null;
-
 function renderModeBadge(): void {
   const hard = modeOf(state) === "hard";
   const badge = $("mode-badge");
   badge.textContent = hard ? "Hard" : "Standard";
   badge.classList.toggle("hard", hard);
 }
-
-function renderModeSwitch(): void {
-  modeSwitch.querySelectorAll<HTMLButtonElement>("button").forEach((b) => {
-    b.classList.toggle("active", b.dataset.mode === modeOf(state));
-    b.classList.toggle("pending", b.dataset.mode === pendingMode);
-  });
-  modeHint.classList.toggle("hidden", !pendingMode);
-}
-
-modeSwitch.addEventListener("click", (e) => {
-  const mode = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-mode]")?.dataset.mode as GameMode | undefined;
-  if (!mode || mode === modeOf(state)) return;
-  // Moduswechsel startet ein neues Spiel – bei laufender Runde erst nach zweitem Tippen.
-  if (!state.gameOver && state.score > 0 && pendingMode !== mode) {
-    pendingMode = mode;
-    renderModeSwitch();
-    return;
-  }
-  pendingMode = null;
-  startNewGame(mode);
-  renderModeSwitch();
-});
 
 function setPhoto(dataUrl: string | null): void {
   photo = dataUrl;
@@ -733,7 +743,6 @@ skinCycleOpt.addEventListener("change", updateSettings);
 window.addEventListener("resize", layout);
 document.addEventListener("contextmenu", (e) => e.preventDefault());
 
-store.saveGame(state);
 fx.initEffects(fxEl, $("fx-global"), cells);
 layout();
 renderBoard();
@@ -742,10 +751,8 @@ renderModeBadge();
 setBest();
 renderComboMeter();
 scoreEl.textContent = String(state.score);
-if (state.gameOver) {
-  showNoSpace();
-  showGameOver();
-}
+// Wie im Original: beim Öffnen zuerst den Modus wählen.
+showStart();
 
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", () => {
