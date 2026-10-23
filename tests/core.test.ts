@@ -3,7 +3,7 @@ import {
   canPlace, emptyBoard, findFullLines, hasAnyMove, idx, isTraySolvable, place, type Board,
 } from "../src/core/board";
 import { comboLabel, praiseLabel, updateCombo, type ComboState } from "../src/core/combo";
-import { findGapBars, generateTray, pieceWeight, trayValue } from "../src/core/generator";
+import { fillWeight, findGapBars, generateTray, pieceFrequency, trayValue } from "../src/core/generator";
 import { newGame, playMove, type GameState } from "../src/core/game";
 import { getPiece, PIECES } from "../src/core/pieces";
 import { Rng } from "../src/core/rng";
@@ -240,12 +240,17 @@ describe("Generator", () => {
   it("Gewichtung nach Füllgrad", () => {
     const small = getPiece("1x2");
     const big = getPiece("3x3");
-    expect(pieceWeight(small, 0.1)).toBe(1);
-    expect(pieceWeight(big, 0.1)).toBeLessThan(1);
-    expect(pieceWeight(small, 0.5)).toBe(1.5);
-    expect(pieceWeight(big, 0.5)).toBe(0.6);
-    expect(pieceWeight(small, 0.7)).toBe(2.5);
-    expect(pieceWeight(big, 0.7)).toBe(0.2);
+    expect(fillWeight(small, 0.1)).toBe(1);
+    expect(fillWeight(big, 0.1)).toBeLessThan(1);
+    expect(fillWeight(small, 0.5)).toBe(1.5);
+    expect(fillWeight(big, 0.5)).toBe(0.6);
+    expect(fillWeight(small, 0.7)).toBe(2.5);
+    expect(fillWeight(big, 0.7)).toBe(0.2);
+  });
+
+  it("Einzelblock und Diagonalen sind selten, Rechtecke und Linien häufig", () => {
+    for (const rare of ["1x1", "D2_a", "D3_b"]) expect(pieceFrequency(getPiece(rare))).toBeLessThan(0.2);
+    for (const common of ["2x2", "2x3", "1x4"]) expect(pieceFrequency(getPiece(common))).toBeGreaterThan(1);
   });
 
   it("Gap-Assist findet Lücken in sonst vollen Linien", () => {

@@ -46,6 +46,39 @@ export const GENERATOR = {
   solverNodeBudget: 60000,
 };
 
+/**
+ * Grundhäufigkeit je Form, nach den Steinen in Aufnahmen der Original-App: vor allem Rechtecke,
+ * gerade Linien und L-Formen; Einzelblock, Zweier und Diagonalen sind selten.
+ * Schlüssel = Präfix der Stein-ID (siehe pieces.ts); wird mit der Füllgrad-Gewichtung multipliziert.
+ */
+export const PIECE_FREQUENCY: Record<string, number> = {
+  "2x2": 2.0,
+  "2x3": 1.6,
+  "3x2": 1.6,
+  "3x3": 1.0,
+  "1x3": 0.8,
+  "3x1": 0.8,
+  "1x4": 1.2,
+  "4x1": 1.2,
+  "1x5": 0.9,
+  "5x1": 0.9,
+  L3: 0.45,
+  L2: 0.55,
+  L5: 0.45,
+  T: 0.35,
+  S: 0.3,
+  Z: 0.3,
+  PLUS: 0.15,
+  "1x2": 0.35,
+  "2x1": 0.35,
+  "1x1": 0.12,
+  D2: 0.08,
+  D3: 0.06,
+};
+
+/** Gap-Assist füllt Lücken aus 1–2 Feldern nur mit dieser Wahrscheinlichkeit (sonst wären Einzelblöcke zu häufig). */
+export const SMALL_GAP_CHANCE = 0.25;
+
 /** Spielmodi: Standard teilt hilfreichere Steine aus, Hard ist der ursprüngliche Generator. */
 export type GameMode = "standard" | "hard";
 export const GAME_MODES: readonly GameMode[] = ["standard", "hard"];
@@ -55,11 +88,11 @@ export const STANDARD_ASSIST = {
   /** So viele Kandidaten-Trays werden bewertet … */
   candidates: 6,
   /** Zusätzlich gezielt gebaute Trays (Steine, die am meisten Linien schließen). */
-  constructed: 3,
+  constructed: 4,
   /** Mit dieser Wahrscheinlichkeit kommt der beste Kandidat, sonst ein zufälliger aus den besten drei. */
   pickBestChance: 0.7,
   /** Gap-Assist greift häufiger und früher. */
-  gapAssistChance: 0.85,
+  gapAssistChance: 0.45,
   gapAssistMinFill: 0.15,
   /** Bewertung eines Trays nach dem Durchspielen. */
   lineValue: 120,

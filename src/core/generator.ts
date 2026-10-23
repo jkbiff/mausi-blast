@@ -1,14 +1,27 @@
-import { BOARD_SIZE as N, GENERATOR as G, STANDARD_ASSIST as S, TRAY_SIZE, type GameMode } from "../config";
+import { BOARD_SIZE as N, GENERATOR as G, PIECE_FREQUENCY, SMALL_GAP_CHANCE, STANDARD_ASSIST as S, TRAY_SIZE, type GameMode } from "../config";
 import { canPlace, canPlaceAnywhere, countFilled, isEmpty, isTraySolvable, place, type Board } from "./board";
 import { barPiece, getPiece, PIECES, type Piece } from "./pieces";
 import type { Rng } from "./rng";
 
-export function pieceWeight(piece: Piece, fill: number): number {
+/** Grundhäufigkeit einer Form (siehe PIECE_FREQUENCY). */
+export function pieceFrequency(piece: Piece): number {
+  const exact = PIECE_FREQUENCY[piece.id];
+  if (exact !== undefined) return exact;
+  const prefix = Object.keys(PIECE_FREQUENCY).find((k) => piece.id.startsWith(k));
+  return prefix ? PIECE_FREQUENCY[prefix] : 1;
+}
+
+/** Füllgrad-Gewichtung: je voller das Feld, desto eher kleine Steine. */
+export function fillWeight(piece: Piece, fill: number): number {
   const small = piece.size <= G.smallSize;
   const big = piece.size >= G.bigSize;
   if (fill < G.fillLow) return big ? G.lowBigWeight : 1;
   if (fill <= G.fillHigh) return small ? G.midSmallWeight : big ? G.midBigWeight : 1;
   return small ? G.highSmallWeight : big ? G.highBigWeight : 1;
+}
+
+export function pieceWeight(piece: Piece, fill: number): number {
+  return pieceFrequency(piece) * fillWeight(piece, fill);
 }
 
 /** Balken, die genau eine Lücke in einer sonst vollen Zeile/Spalte schließen. */
@@ -52,8 +65,10 @@ function candidateTray(board: Board, rng: Rng, fill: number, mode: GameMode): Pi
   const chance = mode === "standard" ? S.gapAssistChance : G.gapAssistChance;
   if (fill > minFill && rng.next() < chance) {
     const gaps = findGapBars(board);
-    if (gaps.length) {
-      tray[rng.int(TRAY_SIZE)] = rng.pick(gaps);
+    // Lücken aus 1–2 Feldern nur selten füllen – sonst kommen ständig Einzelblöcke und Zweier.
+    const usable = gaps.filter((p) => p.size >= 3 || rng.next() < SMALL_GAP_CHANCE);
+    if (usable.length) {
+      tray[rng.int(TRAY_SIZE)] = rng.pick(usable);
       if (allSame(tray)) return candidateTray(board, rng, fill, mode);
     }
   }
@@ -145,9 +160,11 @@ function constructedTray(board: Board, rng: Rng): Piece[] | null {
       }
       if (best) {
         // Bevorzugt Steine, nach denen wenig übrig bleibt; ein leeres Feld zählt besonders.
+        // Gewichtet mit der Grundhäufigkeit: Rechtecke und Linien bevorzugt, Einzelblock/Diagonalen selten.
         const after = place(b, piece, best.r, best.c).board;
         const left = countFilled(after);
-        options.push({ piece, ...best, score: best.score - left * 25 + (left === 0 ? 5000 : 0) });
+        const fit = Math.max(1, best.score - left * 25 + (left === 0 ? 5000 : 0));
+        options.push({ piece, ...best, score: fit * pieceFrequency(piece) });
       }
     }
     if (!options.length) return null;
