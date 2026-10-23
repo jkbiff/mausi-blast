@@ -8,6 +8,12 @@
   font-display: swap;
 }
 @font-face {
+  font-family: "Fredoka";
+  src: url("./fonts/fredoka-latin.woff2") format("woff2");
+  font-weight: 300 700;
+  font-display: swap;
+}
+@font-face {
   font-family: "Nunito";
   src: url("./fonts/nunito-latin.woff2") format("woff2");
   font-weight: 200 1000;
@@ -99,8 +105,9 @@ body::before {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-weight: 900;
-  font-size: 27px;
+  font-family: "Fredoka", "Nunito", sans-serif;
+  font-weight: 600;
+  font-size: 28px;
   letter-spacing: 0.5px;
   color: #ffd84a;
   text-shadow: 0 2px 0 rgba(120, 70, 0, 0.6);
@@ -143,16 +150,15 @@ body::before {
 .score {
   position: relative;
   z-index: 1;
-  font-family: "Nunito", sans-serif;
-  font-weight: 900;
-  font-size: calc(var(--board) * 0.19);
+  /* Wie im Original: runde, kräftige Ziffern ohne Umriss, nur weicher Schatten */
+  font-family: "Fredoka", "Nunito", sans-serif;
+  font-weight: 600;
+  font-size: calc(var(--board) * 0.18);
   line-height: 1;
-  letter-spacing: -1px;
-  -webkit-text-stroke: 1.5px rgba(40, 50, 90, 0.35);
-  font-weight: 900;
+  letter-spacing: 0;
   font-variant-numeric: tabular-nums;
   color: #fff;
-  text-shadow: 0 4px 0 rgba(0, 0, 0, 0.3), 0 0 3px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 /* Punktestand ploppt kurz auf, wenn Punkte dazukommen */
 .score.bump { animation: score-bump 0.22s ease-out; }
@@ -169,7 +175,7 @@ body::before {
   margin: calc(var(--board) * -0.0725);
   transform: rotate(45deg);
   border-radius: 6px;
-  background: linear-gradient(135deg, #ffd1e6 0%, #ff6fae 45%, #d6337f 100%);
+  background: linear-gradient(135deg, #ff9fcb 0%, #ff4f9a 50%, #d81f6e 100%);
   box-shadow: 0 0 16px rgba(255, 90, 170, 0.55), inset 0 0 0 2px rgba(255, 255, 255, 0.3);
   opacity: 0.95;
 }

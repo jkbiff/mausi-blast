@@ -2,3 +2,4 @@ Lilita One – Copyright (c) 2011 Juan Montoreano, lizenziert unter der SIL Open
 Nunito – Copyright 2014 The Nunito Project Authors, lizenziert unter der SIL Open Font License 1.1.
 Lizenztext: https://openfontlicense.org/open-font-license-official-text/
 Quelle: Google Fonts (lateinische Teilmenge, unverändert).
+Fredoka – Copyright 2016 The Fredoka Project Authors, lizenziert unter der SIL Open Font License 1.1.
