@@ -1,3 +1,4 @@
+import type { GameMode } from "../config";
 import { isValidState, type GameState } from "../core/game";
 import { DEFAULT_SKIN, SKIN_IDS } from "../ui/skins";
 
@@ -14,11 +15,19 @@ export interface Stats {
   allClears: number;
 }
 
-export function loadStats(): Stats {
-  return { bestCombo: 0, allClears: 0, ...read<Partial<Stats>>(KEY_STATS) };
+/**
+ * Highscore und Statistik gibt es pro Modus. Werte aus der Zeit vor den Modi (Schlüssel ohne
+ * Modus) stammen aus dem heutigen Hard-Modus und werden dort weiterverwendet.
+ */
+function readPerMode<T>(key: string, mode: GameMode): T | null {
+  return read<T>(`${key}:${mode}`) ?? (mode === "hard" ? read<T>(key) : null);
 }
 
-export const saveStats = (s: Stats) => write(KEY_STATS, s);
+export function loadStats(mode: GameMode): Stats {
+  return { bestCombo: 0, allClears: 0, ...readPerMode<Partial<Stats>>(KEY_STATS, mode) };
+}
+
+export const saveStats = (mode: GameMode, s: Stats) => write(`${KEY_STATS}:${mode}`, s);
 
 export interface Settings {
   sound: boolean;
@@ -55,8 +64,8 @@ export function loadGame(): GameState | null {
 
 export const saveGame = (state: GameState) => write(KEY_GAME, state);
 
-export const loadBest = (): number => read<number>(KEY_BEST) ?? 0;
-export const saveBest = (best: number) => write(KEY_BEST, best);
+export const loadBest = (mode: GameMode): number => readPerMode<number>(KEY_BEST, mode) ?? 0;
+export const saveBest = (mode: GameMode, best: number) => write(`${KEY_BEST}:${mode}`, best);
 
 /** Rekord zu Beginn der laufenden Runde – damit „Neuer Rekord!“ auch nach einem Neuladen stimmt. */
 export const loadRoundBest = (): number | null => read<number>(KEY_ROUND_BEST);

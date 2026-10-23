@@ -16,6 +16,9 @@ Regeln und Punkteformel: siehe [`MAUSI_BLAST_SPEC.md`](MAUSI_BLAST_SPEC.md).
 
 Highscore und laufende Runde werden lokal auf dem Gerät gespeichert.
 
+**Modi:** *Standard* teilt hilfreiche Steine aus (häufiger „All Clear“), *Hard* ist der strengere
+ursprüngliche Generator. Jeder Modus hat eigenen Highscore und eigene Statistik.
+
 ## Entwicklung
 
 ```bash
@@ -34,7 +37,7 @@ src/core/            reine Spiellogik, testbar ohne Browser
   board.ts           canPlace, place, hasAnyMove, isTraySolvable
   combo.ts           Combo-Zähler
   scoring.ts         Punkteformel
-  generator.ts       fairer Stein-Generator (Füllgrad-Gewichtung, Gap-Assist, Lösbarkeits-Check)
+  generator.ts       Stein-Generator: Hard (Füllgrad, Gap-Assist, Lösbarkeit), Standard (bewertet Trays)
   game.ts            Spielzustand, Züge
   rng.ts             seedbarer Zufall
 src/state/storage.ts Speichern/Laden (localStorage)

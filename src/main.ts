@@ -2,7 +2,8 @@ import "./styles.css";
 import { BOARD_SIZE as N, COMBO_MISS_LIMIT, TRAY_SIZE } from "./config";
 import { canPlace, canPlaceAnywhere, place } from "./core/board";
 import { praiseLabel } from "./core/combo";
-import { newGame, playMove, type GameState, type MoveResult } from "./core/game";
+import { modeOf, newGame, playMove, type GameState, type MoveResult } from "./core/game";
+import type { GameMode } from "./config";
 import { getPiece, type Piece } from "./core/pieces";
 import { randomSeed } from "./core/rng";
 import * as store from "./state/storage";
@@ -34,15 +35,15 @@ const photoInput = $<HTMLInputElement>("photo-input");
 
 // ---------- Zustand ----------
 
-let state: GameState = store.loadGame() ?? newGame(randomSeed());
-let best = Math.max(store.loadBest(), state.score);
+let state: GameState = store.loadGame() ?? newGame(randomSeed(), "standard");
+let best = Math.max(store.loadBest(modeOf(state)), state.score);
 /** Rekord zu Beginn der Runde – für „Neuer Rekord!“. */
-let bestAtStart = store.loadRoundBest() ?? store.loadBest();
+let bestAtStart = store.loadRoundBest() ?? store.loadBest(modeOf(state));
 store.saveRoundBest(bestAtStart);
 /** „Neuer Rekord!“ wird pro Runde nur einmal gefeiert. */
 let recordCelebrated = bestAtStart > 0 && state.score > bestAtStart;
 let settings = store.loadSettings();
-let stats = store.loadStats();
+let stats = store.loadStats(modeOf(state));
 let shownScore = state.score;
 let gameOverTimer = 0;
 /** Beim Game Over werden die leeren Felder mit bunten Blöcken aufgefüllt (Feld → Farbe). */
@@ -192,7 +193,7 @@ function renderTray(dealAnimation: boolean): void {
 function setBest(): void {
   if (state.score > best) {
     best = state.score;
-    store.saveBest(best);
+    store.saveBest(modeOf(state), best);
   }
   bestEl.textContent = String(best);
   if (!recordCelebrated && bestAtStart > 0 && state.score > bestAtStart) {
@@ -395,7 +396,7 @@ function updateStats(res: MoveResult): void {
   };
   if (next.bestCombo !== stats.bestCombo || next.allClears !== stats.allClears) {
     stats = next;
-    store.saveStats(stats);
+    store.saveStats(modeOf(state), stats);
   }
 }
 
@@ -404,13 +405,18 @@ function showGameOver(): void {
   $("go-all-clears").textContent = String(stats.allClears);
   $("go-score").textContent = String(state.score);
   $("go-best").textContent = String(best);
+  $("go-mode").textContent = modeOf(state) === "hard" ? "Hard" : "Standard";
   $("go-record").classList.toggle("hidden", !(state.score > bestAtStart && state.score > 0));
   gameOverEl.classList.remove("hidden");
 }
 
-function startNewGame(): void {
+function startNewGame(mode: GameMode = modeOf(state)): void {
   window.clearTimeout(gameOverTimer);
-  state = newGame(randomSeed());
+  state = newGame(randomSeed(), mode);
+  best = store.loadBest(mode);
+  stats = store.loadStats(mode);
+  bestEl.textContent = String(best);
+  renderModeBadge();
   bestAtStart = best;
   store.saveRoundBest(bestAtStart);
   recordCelebrated = false;
@@ -552,7 +558,7 @@ window.addEventListener("pointercancel", (e) => {
 
 // ---------- Menüs ----------
 
-$("btn-restart").addEventListener("click", startNewGame);
+$("btn-restart").addEventListener("click", () => startNewGame());
 
 $("btn-settings").addEventListener("click", () => {
   sfx.unlockAudio();
@@ -560,6 +566,8 @@ $("btn-settings").addEventListener("click", () => {
   hapticsOpt.checked = settings.haptics;
   skinCycleOpt.checked = settings.skinCycle;
   renderSkins();
+  pendingMode = null;
+  renderModeSwitch();
   newGameBtn.textContent = "New Game";
   newGameBtn.classList.remove("danger");
   settingsEl.classList.remove("hidden");
@@ -579,6 +587,41 @@ newGameBtn.addEventListener("click", () => {
     return;
   }
   startNewGame();
+});
+
+// ---------- Modus ----------
+
+const modeSwitch = $("mode-switch");
+const modeHint = $("mode-hint");
+let pendingMode: GameMode | null = null;
+
+function renderModeBadge(): void {
+  const hard = modeOf(state) === "hard";
+  const badge = $("mode-badge");
+  badge.textContent = hard ? "Hard" : "Standard";
+  badge.classList.toggle("hard", hard);
+}
+
+function renderModeSwitch(): void {
+  modeSwitch.querySelectorAll<HTMLButtonElement>("button").forEach((b) => {
+    b.classList.toggle("active", b.dataset.mode === modeOf(state));
+    b.classList.toggle("pending", b.dataset.mode === pendingMode);
+  });
+  modeHint.classList.toggle("hidden", !pendingMode);
+}
+
+modeSwitch.addEventListener("click", (e) => {
+  const mode = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-mode]")?.dataset.mode as GameMode | undefined;
+  if (!mode || mode === modeOf(state)) return;
+  // Moduswechsel startet ein neues Spiel – bei laufender Runde erst nach zweitem Tippen.
+  if (!state.gameOver && state.score > 0 && pendingMode !== mode) {
+    pendingMode = mode;
+    renderModeSwitch();
+    return;
+  }
+  pendingMode = null;
+  startNewGame(mode);
+  renderModeSwitch();
 });
 
 function setPhoto(dataUrl: string | null): void {
@@ -695,6 +738,7 @@ fx.initEffects(fxEl, $("fx-global"), cells);
 layout();
 renderBoard();
 renderTray(true);
+renderModeBadge();
 setBest();
 renderComboMeter();
 scoreEl.textContent = String(state.score);

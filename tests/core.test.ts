@@ -3,7 +3,7 @@ import {
   canPlace, emptyBoard, findFullLines, hasAnyMove, idx, isTraySolvable, place, type Board,
 } from "../src/core/board";
 import { comboLabel, praiseLabel, updateCombo, type ComboState } from "../src/core/combo";
-import { findGapBars, generateTray, pieceWeight } from "../src/core/generator";
+import { findGapBars, generateTray, pieceWeight, trayValue } from "../src/core/generator";
 import { newGame, playMove, type GameState } from "../src/core/game";
 import { getPiece, PIECES } from "../src/core/pieces";
 import { Rng } from "../src/core/rng";
@@ -270,6 +270,27 @@ describe("Generator", () => {
     for (let i = 0; i < 30; i++) {
       expect(hasAnyMove(b, generateTray(b, rng))).toBe(true);
     }
+  });
+
+  it("Standard: Spielstart mit drei gleichen Rechtecken, danach normale Trays", () => {
+    const g = newGame(5, "standard");
+    const ids = g.tray.map((t) => t!.pieceId);
+    expect(new Set(ids).size).toBe(1);
+    expect(["2x3", "3x2", "2x2"]).toContain(ids[0]);
+    expect(newGame(5, "hard").tray.map((t) => t!.pieceId)).not.toEqual(ids);
+  });
+
+  it("Standard: ausgeteilte Trays sind immer komplett platzierbar", () => {
+    const rng = new Rng(11);
+    const b = boardFrom(["XXXX....", "XXXXX...", "XX......", "........", "....XX..", "XXXXXX..", "XXXXXXX.", "XXXXXX.."]);
+    for (let i = 0; i < 20; i++) expect(isTraySolvable(b, generateTray(b, rng, "standard"))).toBe(true);
+  });
+
+  it("trayValue bevorzugt Trays, die das Feld leer räumen", () => {
+    const b = boardFrom(["........", "........", "........", "........", "........", "........", "........", "XXXXX..."]);
+    const clears = trayValue(b, [getPiece("1x3"), getPiece("1x1"), getPiece("1x1")]);
+    const blocks = trayValue(b, [getPiece("3x3"), getPiece("3x3"), getPiece("1x1")]);
+    expect(clears).toBeGreaterThan(blocks);
   });
 
   it("simulierte Partien laufen ohne Fehler und zählen Punkte", () => {

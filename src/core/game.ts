@@ -1,4 +1,4 @@
-import { BOARD_SIZE as N, COLOR_COUNT, TRAY_SIZE } from "../config";
+import { BOARD_SIZE as N, COLOR_COUNT, GAME_MODES, TRAY_SIZE, type GameMode } from "../config";
 import { canPlace, emptyBoard, hasAnyMove, isEmpty, place, type Board } from "./board";
 import { updateCombo } from "./combo";
 import { generateTray } from "./generator";
@@ -23,7 +23,11 @@ export interface GameState {
   dealRound: number;
   gameOver: boolean;
   rngState: number;
+  /** Spielmodus; ältere Spielstände ohne Modus gelten als "hard". */
+  mode?: GameMode;
 }
+
+export const modeOf = (state: GameState): GameMode => state.mode ?? "hard";
 
 export interface MoveResult {
   state: GameState;
@@ -39,7 +43,7 @@ export interface MoveResult {
 }
 
 function dealInto(state: GameState, rng: Rng): void {
-  const pieces = generateTray(state.board, rng);
+  const pieces = generateTray(state.board, rng, modeOf(state), state.dealRound === 0);
   const colors: number[] = [];
   state.tray = pieces.map((p) => {
     let color: number;
@@ -56,7 +60,7 @@ export function trayPieces(state: GameState): Piece[] {
   return state.tray.filter((t): t is TrayItem => t !== null).map((t) => getPiece(t.pieceId));
 }
 
-export function newGame(seed: number): GameState {
+export function newGame(seed: number, mode: GameMode = "standard"): GameState {
   const state: GameState = {
     version: 1,
     board: emptyBoard(),
@@ -67,6 +71,7 @@ export function newGame(seed: number): GameState {
     dealRound: 0,
     gameOver: false,
     rngState: seed >>> 0,
+    mode,
   };
   dealInto(state, new Rng(state.rngState));
   return state;
@@ -133,7 +138,8 @@ export function isValidState(s: unknown): s is GameState {
     Array.isArray(g.tray) &&
     g.tray.length === TRAY_SIZE &&
     g.tray.every((t) => t === null || (typeof t.pieceId === "string" && !!getPieceSafe(t.pieceId))) &&
-    typeof g.score === "number"
+    typeof g.score === "number" &&
+    (g.mode === undefined || GAME_MODES.includes(g.mode))
   );
 }
 

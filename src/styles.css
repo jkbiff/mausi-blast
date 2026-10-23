@@ -87,6 +87,20 @@ body {
   text-shadow: 0 2px 0 rgba(120, 70, 0, 0.6);
 }
 .best svg { width: 42px; height: 32px; fill: #24307a; filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.35)); }
+.mode-badge {
+  align-self: center;
+  margin-left: 4px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.22);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-shadow: none;
+}
+.mode-badge.hard { background: #c4234f; }
 .best.record svg { animation: crown 0.6s ease-in-out 3; }
 @keyframes crown {
   50% { transform: scale(1.5) rotate(-12deg); fill: #ffd84a; filter: drop-shadow(0 0 8px #ffd84a); }
@@ -905,6 +919,23 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
 .toggle.small i { flex: none; }
 
 /* Skin-Album: Karte mit Themenhintergrund und 3×3-Vorschau */
+.mode-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 4px 10px; font-size: 18px; font-weight: 700; }
+.mode-switch { display: flex; padding: 3px; border-radius: 14px; background: rgba(255, 255, 255, 0.1); }
+.mode-switch button {
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 11px;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.mode-switch button.active { background: var(--accent); }
+.mode-switch button[data-mode="hard"].active { background: #c4234f; }
+.mode-switch button.pending { outline: 2px solid #fff; }
+.mode-hint { margin: -4px 0 8px; color: var(--muted); font-size: 13px; text-align: right; }
 .skin-row { padding: 10px 4px 4px; text-align: left; font-size: 18px; font-weight: 700; }
 .skins { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
 .skins button {

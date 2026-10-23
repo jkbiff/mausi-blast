@@ -46,5 +46,26 @@ export const GENERATOR = {
   solverNodeBudget: 60000,
 };
 
+/** Spielmodi: Standard teilt hilfreichere Steine aus, Hard ist der ursprüngliche Generator. */
+export type GameMode = "standard" | "hard";
+export const GAME_MODES: readonly GameMode[] = ["standard", "hard"];
+
+/** Zusätzliche Hilfe im Standard-Modus (siehe generator.ts). */
+export const STANDARD_ASSIST = {
+  /** So viele Kandidaten-Trays werden bewertet … */
+  candidates: 6,
+  /** Zusätzlich gezielt gebaute Trays (Steine, die am meisten Linien schließen). */
+  constructed: 3,
+  /** Mit dieser Wahrscheinlichkeit kommt der beste Kandidat, sonst ein zufälliger aus den besten drei. */
+  pickBestChance: 0.7,
+  /** Gap-Assist greift häufiger und früher. */
+  gapAssistChance: 0.85,
+  gapAssistMinFill: 0.15,
+  /** Bewertung eines Trays nach dem Durchspielen. */
+  lineValue: 120,
+  allClearValue: 2500,
+  fillPenalty: 4,
+};
+
 // Darstellung: Anzahl Steinfarben (Farbe hat keine Spielbedeutung).
 export const COLOR_COUNT = 8;
