@@ -83,16 +83,33 @@ let cellPx = 40;
 let gapPx = 3;
 let trayCellPx = 20;
 
+/**
+ * Feldgröße und Fuge aus dem echten Spielfeld messen. Ist das Stylesheet noch nicht angewendet
+ * (Safari lädt es manchmal erst nach dem Skript), wäre ein „Feld“ so breit wie das ganze Brett –
+ * dann wird aus der Brettgröße gerechnet und später neu gemessen.
+ */
+function measureCells(size = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--board")) || 360): boolean {
+  const r0 = cells[0].getBoundingClientRect();
+  const r1 = cells[1].getBoundingClientRect();
+  const pitch = r1.left - r0.left;
+  const plausible = r0.width > 4 && r0.width < size / 6 && pitch > r0.width && pitch < size / 6;
+  if (plausible) {
+    cellPx = r0.width;
+    gapPx = pitch - r0.width;
+  } else {
+    gapPx = 2;
+    cellPx = Math.max(10, (size * 0.95 - 7 * gapPx) / 8);
+  }
+  return plausible;
+}
+
 function layout(): void {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   // Platzbedarf: Kopfzeile + Punktestand (0,3 × Brett) + Brett + Tray (0,4 × Brett) + Ränder
   const size = Math.floor(Math.min(vw - 26, 520, (vh - 90) / 1.72));
   document.documentElement.style.setProperty("--board", `${size}px`);
-  const r0 = cells[0].getBoundingClientRect();
-  const r1 = cells[1].getBoundingClientRect();
-  cellPx = r0.width;
-  gapPx = r1.left - r0.right;
+  measureCells(size);
   // Tray-Steine wie im Original knapp halb so groß wie die Felder
   trayCellPx = Math.floor(Math.min(cellPx * 0.46, (size / 3 - 8) / 5));
   boardWrap.style.setProperty("--bsz", `${cellPx}px`);
@@ -580,6 +597,8 @@ trayEl.addEventListener("pointerdown", (e) => {
   e.preventDefault();
 
   const piece = getPiece(item.pieceId);
+  // Spielfeld frisch vermessen, damit der Stein exakt Feldgröße hat
+  measureCells();
   const layer = document.createElement("div");
   layer.className = "drag-layer";
   const el = pieceEl(piece, item.color, cellPx, gapPx);
@@ -770,6 +789,10 @@ skinCycleOpt.addEventListener("change", updateSettings);
 // ---------- Start ----------
 
 window.addEventListener("resize", layout);
+// Nochmals messen, wenn Stylesheet und Schriften sicher geladen sind bzw. die Seite aus dem Cache zurückkommt
+window.addEventListener("load", layout);
+window.addEventListener("pageshow", layout);
+document.fonts?.ready.then(layout);
 document.addEventListener("contextmenu", (e) => e.preventDefault());
 
 fx.initEffects(fxEl, $("fx-global"), cells);
