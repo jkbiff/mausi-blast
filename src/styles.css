@@ -59,6 +59,20 @@ body {
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
 }
+/* Hintergrund des Themas als eigene Ebene, die bis unter Statusleiste und Home-Balken reicht
+   (als installierte App ist der Bildschirm dort größer als die Seite). */
+body::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  top: calc(-1 * env(safe-area-inset-top) - 60px);
+  bottom: calc(-1 * env(safe-area-inset-bottom) - 60px);
+  left: 0;
+  right: 0;
+  background: var(--page-bg);
+  background-color: #5a2244;
+  pointer-events: none;
+}
 
 #app {
   height: 100dvh;
