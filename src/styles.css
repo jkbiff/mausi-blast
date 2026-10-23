@@ -940,7 +940,7 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
   width: 100%;
   display: grid;
   grid-template-columns: 1fr auto;
-  grid-template-areas: "name cta" "sub cta" "best cta";
+  grid-template-areas: "name cta" "best cta";
   align-items: center;
   gap: 2px 12px;
   padding: 18px 20px;
@@ -957,7 +957,6 @@ body.has-photo[data-skin="foto"] .board .cell.filled {
 .mode-card.hard { background: linear-gradient(160deg, #e2508a, #a81f55); box-shadow: 0 6px 0 #6d1438, 0 12px 24px rgba(0, 0, 0, 0.3); }
 .mode-card.hard:active { box-shadow: 0 2px 0 #6d1438, 0 6px 14px rgba(0, 0, 0, 0.3); }
 .mode-name { grid-area: name; font-family: "Lilita One", "Nunito", sans-serif; font-size: 30px; text-shadow: 0 3px 0 rgba(0, 0, 0, 0.2); }
-.mode-sub { grid-area: sub; font-size: 14px; font-weight: 800; opacity: 0.9; }
 .mode-best { grid-area: best; font-size: 14px; font-weight: 800; color: #ffe6f2; }
 .mode-best b { color: #fff; font-weight: 900; }
 .mode-cta {
