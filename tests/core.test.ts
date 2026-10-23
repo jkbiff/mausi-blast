@@ -116,60 +116,63 @@ describe("Combo", () => {
   });
 });
 
-describe("Punkte (block-blast.gg/de/scoring)", () => {
-  it("Linienpunkte 10 × L × L", () => {
-    expect([1, 2, 3, 4, 5, 6].map((l) => linePoints(l, 1))).toEqual([10, 40, 90, 160, 250, 360]);
+describe("Punkte (gemessen an der Original-App)", () => {
+  it("Linienpunkte: pro Linie 55 × Combo − 5, linear in der Linienzahl", () => {
+    expect([1, 2, 3].map((l) => linePoints(l, 1))).toEqual([50, 100, 150]);
     expect(linePoints(0, 5)).toBe(0);
   });
 
-  it("Combo-Multiplikator = Position in der Combo, höchstens ×8", () => {
-    expect([1, 2, 3, 4, 5, 6, 7, 8, 9, 15].map((c) => linePoints(1, c))).toEqual([10, 20, 30, 40, 50, 60, 70, 80, 80, 80]);
-    expect(linePoints(2, 2)).toBe(80);
+  it("trifft die Messwerte aus den Videos auf wenige Prozent", () => {
+    const measured: [lines: number, combo: number, app: number][] = [
+      [3, 1, 154],
+      [1, 10, 566],
+      [1, 13, 720],
+      [1, 14, 770],
+      [1, 15, 822],
+      [2, 12, 1334],
+    ];
+    for (const [l, c, app] of measured) expect(Math.abs(linePoints(l, c) - app) / app).toBeLessThan(0.04);
   });
 
-  it("Eine Reihe mit 4er-Linie → 14", () => {
-    expect(scoreMove({ placedCells: 4, linesCleared: 1, combo: 1, boardEmptyAfter: false })).toBe(14);
-  });
-
-  it("Kleine Ecke räumt Reihe + Spalte ab → 43", () => {
-    expect(scoreMove({ placedCells: 3, linesCleared: 2, combo: 1, boardEmptyAfter: false })).toBe(43);
-  });
-
-  it("Komplettabräumung: 3 + 10 + 300 = 313, Bonus nie vervielfacht", () => {
-    expect(scoreMove({ placedCells: 3, linesCleared: 1, combo: 1, boardEmptyAfter: true })).toBe(313);
-    expect(scoreMove({ placedCells: 3, linesCleared: 1, combo: 3, boardEmptyAfter: true })).toBe(333);
+  it("keine Obergrenze beim Combo-Multiplikator", () => {
+    expect(linePoints(1, 20)).toBe(1095);
   });
 
   it("Blockpunkte gibt es auch ohne Abräumen, nie vervielfacht", () => {
     expect(scoreMove({ placedCells: 9, linesCleared: 0, combo: 5, boardEmptyAfter: false })).toBe(9);
   });
+
+  it("Komplettabräumung: +300, nicht vervielfacht", () => {
+    expect(scoreMove({ placedCells: 3, linesCleared: 1, combo: 1, boardEmptyAfter: true })).toBe(353);
+    expect(scoreMove({ placedCells: 3, linesCleared: 1, combo: 3, boardEmptyAfter: true })).toBe(463);
+  });
 });
 
 describe("Spielzüge (playMove)", () => {
-  it("4-Zellen-Stein füllt 1 Linie, erster Clear → 14", () => {
+  it("4-Zellen-Stein füllt 1 Linie, erster Clear → 54", () => {
     const b = boardFrom(["XXXX....", "X"]);
     const r = playMove(stateWith(b, ["1x4", "1x1", "1x1"]), 0, 0, 4);
-    expect(r.points).toBe(14);
+    expect(r.points).toBe(54);
     expect(r.combo).toBe(1);
   });
 
-  it("1×1 schließt Zeile + Spalte gleichzeitig → 41", () => {
+  it("1×1 schließt Zeile + Spalte gleichzeitig → 101", () => {
     const rows = Array(8).fill("...X....");
     rows[3] = "XXX.XXXX";
     rows[0] = "X..X....";
     const r = playMove(stateWith(boardFrom(rows), ["1x1", "1x1", "1x2"]), 0, 3, 3);
     expect(r.linesCleared).toBe(2);
-    expect(r.points).toBe(41);
+    expect(r.points).toBe(101);
   });
 
-  it("Komplettabräumung: 3er-Linie räumt die letzte Reihe ab → 313, unabhängig vom Spielfortschritt", () => {
+  it("Komplettabräumung: 3er-Linie räumt die letzte Reihe ab → 353, unabhängig vom Spielfortschritt", () => {
     const b = boardFrom(["........", "........", "........", "........", "........", "........", "........", "XXXXX..."]);
     const r = playMove(stateWith(b, ["1x3", "1x2", "1x1"], { dealRound: 1 }), 0, 7, 5);
-    expect(r.points).toBe(313);
+    expect(r.points).toBe(353);
     expect(r.allClear).toBe(true);
   });
 
-  it("3×3 in Ecke schließt 3 Zeilen + 3 Spalten → 9 + 360 = 369", () => {
+  it("3×3 in Ecke schließt 3 Zeilen + 3 Spalten → 9 + 300 = 309", () => {
     const rows = [
       "...XXXXX",
       "...XXXXX",
@@ -182,10 +185,10 @@ describe("Spielzüge (playMove)", () => {
     ];
     const r = playMove(stateWith(boardFrom(rows), ["3x3", "1x1", "1x2"]), 0, 0, 0);
     expect(r.linesCleared).toBe(6);
-    expect(r.points).toBe(369);
+    expect(r.points).toBe(309);
   });
 
-  it("Combo aus drei Abräumungen: 14 + 3 + 84 + 31 = 132 (Beispiel der Seite)", () => {
+  it("Combo aus drei Abräumungen: 54 + 3 + 214 + 161 = 432", () => {
     const rows = [
       "..XXXXXX",
       "........",
@@ -204,9 +207,9 @@ describe("Spielzüge (playMove)", () => {
     const m2 = playMove(m1.state, 1, 3, 0); // 3er-Linie räumt nichts ab
     const m3 = playMove(m2.state, 2, 4, 5); // T-Form räumt zwei Reihen ab, 2. abräumender Zug
     const m4 = playMove(withTray(m3.state, ["1x1"]), 0, 6, 7); // Einzelblock, 3. abräumender Zug
-    expect([m1.points, m2.points, m3.points, m4.points]).toEqual([14, 3, 84, 31]);
+    expect([m1.points, m2.points, m3.points, m4.points]).toEqual([54, 3, 214, 161]);
     expect([m1.combo, m3.combo, m4.combo]).toEqual([1, 2, 3]);
-    expect(m4.state.score).toBe(132);
+    expect(m4.state.score).toBe(432);
   });
 
   it("nach dem dritten Stein wird neu ausgeteilt", () => {

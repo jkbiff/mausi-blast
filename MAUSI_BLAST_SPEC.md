@@ -81,9 +81,9 @@ nach jeder Platzierung:
 - Beispiele: Clear → kein → kein → Clear = C 1, dann 2. Clear → kein → kein → kein → Clear = C 1, dann 1.
 - **Anzeige:** Bei C = 1 kein Label. Bei C = 2 „COMBO“ ohne Zahl. Ab C = 3 „COMBO {C−1}“. (Für Mausi Blast frei änderbar, z. B. einfach „Combo ×C“.)
 
-> **Stand Mausi Blast:** Die Punktewertung folgt inzwischen https://block-blast.gg/de/scoring
-> (Linien 10 × L × L, Combo-Multiplikator = Position in der Combo, höchstens ×8, +300 bei jeder
-> Komplettabräumung). Abschnitt 4 unten beschreibt die ursprüngliche Spec und gilt nicht mehr.
+> **Stand Mausi Blast:** Die Punktewertung ist an Bildschirmaufnahmen der Original-App gemessen:
+> 1 Punkt pro Block, pro abgeräumter Linie 55 × Combo − 5 (ohne Obergrenze), +300 bei
+> Komplettabräumung (siehe `src/config.ts`). Abschnitt 4 unten beschreibt die ursprüngliche Spec und gilt nicht mehr.
 
 ## 4. Punkteformel (Original-Baseline)
 

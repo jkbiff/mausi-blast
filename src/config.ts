@@ -4,10 +4,14 @@ export const BOARD_SIZE = 8;
 export const TRAY_SIZE = 3;
 
 // Punkte
-export const POINTS_PER_LINE = 10;
+/**
+ * Linienpunkte pro Linie = LINE_POINTS_PER_COMBO × Combo − LINE_POINTS_OFFSET.
+ * Aus Bildschirmaufnahmen der Original-App gemessen (z. B. 1 Linie bei Combo 14 → 770,
+ * 2 Linien bei Combo 12 → 1334, 3 Linien ohne Combo → 154); trifft diese auf wenige Prozent.
+ */
+export const LINE_POINTS_PER_COMBO = 55;
+export const LINE_POINTS_OFFSET = 5;
 export const ALL_CLEAR_BONUS = 300;
-/** Höchster Combo-Multiplikator für Linienpunkte; die Combo-Stufe zählt darüber hinaus weiter. */
-export const MAX_COMBO_MULTIPLIER = 8;
 
 // Combo: so viele Platzierungen ohne Clear in Folge setzen die Combo zurück.
 export const COMBO_MISS_LIMIT = 3;

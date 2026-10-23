@@ -1,10 +1,10 @@
-// Punktewertung wie auf block-blast.gg/de/scoring beschrieben.
-import { ALL_CLEAR_BONUS, MAX_COMBO_MULTIPLIER, POINTS_PER_LINE } from "../config";
+// Punktewertung, gemessen an der Original-App (siehe config.ts).
+import { ALL_CLEAR_BONUS, LINE_POINTS_OFFSET, LINE_POINTS_PER_COMBO } from "../config";
 
-/** Linienpunkte: 10 × L × L, multipliziert mit der Combo-Position (höchstens ×8). */
+/** Linienpunkte: pro Linie 55 × Combo − 5 (Combo = Position in der Combo, ohne Obergrenze). */
 export function linePoints(lines: number, combo: number): number {
   if (lines <= 0) return 0;
-  return POINTS_PER_LINE * lines * lines * Math.min(Math.max(combo, 1), MAX_COMBO_MULTIPLIER);
+  return lines * (LINE_POINTS_PER_COMBO * Math.max(combo, 1) - LINE_POINTS_OFFSET);
 }
 
 /** Komplettabräumung: der Zug räumt Linien ab und hinterlässt ein leeres Feld. */
@@ -20,7 +20,7 @@ export interface MoveScoreInput {
   boardEmptyAfter: boolean;
 }
 
-/** Blöcke (nie vervielfacht) + Linienpunkte × Combo + 300 bei Komplettabräumung. */
+/** Blöcke (nie vervielfacht) + Linienpunkte + 300 bei Komplettabräumung. */
 export function scoreMove(m: MoveScoreInput): number {
   const bonus = isAllClearBonus(m.boardEmptyAfter, m.linesCleared) ? ALL_CLEAR_BONUS : 0;
   return m.placedCells + linePoints(m.linesCleared, m.combo) + bonus;
