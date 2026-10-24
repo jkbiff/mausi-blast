@@ -113,6 +113,7 @@ function layout(): void {
   // Tray-Steine wie im Original knapp halb so groß wie die Felder
   trayCellPx = Math.floor(Math.min(cellPx * 0.46, (size / 3 - 8) / 5));
   boardWrap.style.setProperty("--bsz", `${cellPx}px`);
+  fx.invalidateGeometry();
   renderTray(false);
 }
 
@@ -309,8 +310,28 @@ function commitMove(slot: number, row: number, col: number): void {
   if (res.allClear) {
     allClearSequence(res, item.color);
   } else if (res.linesCleared > 0) {
+    // Sofort: zerspringende Blöcke an der Stelle der abgeräumten Felder (sonst blitzt das leere Feld auf).
     fx.shatter(res.clearedCells, () => String(item.color), res.clearedRows, res.placedCells);
     fx.streaks(res.clearedRows, res.clearedCols);
+    sfx.playClear(res.linesCleared, res.combo);
+    if (res.linesCleared >= 3) shake();
+    // Ein Bild später: Zahlen, Lob und Banner – so verteilt sich die Arbeit auf zwei Bilder.
+    requestAnimationFrame(() => clearTexts(res, item.color, before));
+  } else {
+    sfx.playPlace();
+  }
+
+  setBest();
+  animateScore();
+  renderComboMeter(res.linesCleared > 0);
+  // Tray erst im nächsten Bild neu aufbauen, nicht im selben wie das Abräumen
+  if (res.dealtNewTray) requestAnimationFrame(() => renderTray(true));
+  else renderTray(false);
+  if (state.gameOver) scheduleGameOver();
+}
+
+function clearTexts(res: MoveResult, color: number, before: number[]): void {
+  {
     if (res.combo >= 2) fx.cellNumbers(res.clearedCells, res.combo);
     fx.points(res.points, fx.centroid(res.clearedCells), res.combo >= 4 ? "green" : "gold");
     pulseScoreGem();
@@ -327,20 +348,10 @@ function commitMove(slot: number, row: number, col: number): void {
     if (res.combo >= 2) parts.push(...fx.comboContent(res.combo));
     if (parts.length) fx.banner(parts, res.linesCleared >= 4 || res.combo >= 8 ? "huge" : "");
     // „Farbe weg!“: eine Farbe, die vorher auf dem Feld war, ist durch das Abräumen ganz verschwunden
-    const colorsBefore = new Set([...before.filter(Boolean), item.color]);
-    const colorsAfter = new Set(state.board.filter(Boolean));
+    const colorsBefore = new Set([...before.filter(Boolean), color]);
+    const colorsAfter = new Set(res.state.board.filter(Boolean));
     if ([...colorsBefore].some((c) => !colorsAfter.has(c))) window.setTimeout(fx.colorGone, 150);
-    sfx.playClear(res.linesCleared, res.combo);
-    if (res.linesCleared >= 3) shake();
-  } else {
-    sfx.playPlace();
   }
-
-  setBest();
-  animateScore();
-  renderComboMeter(res.linesCleared > 0);
-  renderTray(res.dealtNewTray);
-  if (state.gameOver) scheduleGameOver();
 }
 
 /**
@@ -597,8 +608,9 @@ trayEl.addEventListener("pointerdown", (e) => {
   e.preventDefault();
 
   const piece = getPiece(item.pieceId);
-  // Spielfeld frisch vermessen, damit der Stein exakt Feldgröße hat
+  // Spielfeld frisch vermessen, damit der Stein exakt Feldgröße hat (auch für die Effekte beim Abräumen)
   measureCells();
+  fx.invalidateGeometry(true);
   const layer = document.createElement("div");
   layer.className = "drag-layer";
   const el = pieceEl(piece, item.color, cellPx, gapPx);

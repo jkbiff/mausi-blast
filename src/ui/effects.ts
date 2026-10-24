@@ -13,9 +13,31 @@ export function initEffects(fxEl: HTMLElement, globalEl: HTMLElement, cellEls: H
   cells = cellEls;
 }
 
+/**
+ * Effekt-Elemente werden gesammelt und einmal pro Durchlauf gemeinsam eingefügt (ein Layout statt
+ * vieler) und gemeinsam wieder entfernt, wenn das längste Element fertig ist. Alle Effekte enden
+ * unsichtbar, ein etwas späteres Entfernen ist also nicht zu sehen.
+ */
+const batches = new Map<HTMLElement, { frag: DocumentFragment; els: HTMLElement[]; ttl: number }>();
+
+function flush(): void {
+  for (const [parent, b] of batches) {
+    parent.appendChild(b.frag);
+    window.setTimeout(() => b.els.forEach((el) => el.remove()), b.ttl);
+  }
+  batches.clear();
+}
+
 function spawn(el: HTMLElement, ttl: number, parent: HTMLElement = fx): void {
-  parent.appendChild(el);
-  window.setTimeout(() => el.remove(), ttl);
+  let b = batches.get(parent);
+  if (!b) {
+    if (!batches.size) queueMicrotask(flush);
+    b = { frag: document.createDocumentFragment(), els: [], ttl: 0 };
+    batches.set(parent, b);
+  }
+  b.frag.appendChild(el);
+  b.els.push(el);
+  b.ttl = Math.max(b.ttl, ttl);
 }
 
 function div(className: string, style: Record<string, string> = {}): HTMLDivElement {
@@ -30,11 +52,40 @@ function div(className: string, style: Record<string, string> = {}): HTMLDivElem
 
 const rand = (min: number, max: number) => min + Math.random() * (max - min);
 
+/**
+ * Spielfeld-Geometrie relativ zur Effektebene. Wird gemerkt, bis sich das Layout ändert
+ * (invalidateGeometry) – so muss beim Abräumen nicht mitten im Neuzeichnen gemessen werden.
+ */
+let geomCache: { x0: number; y0: number; pitchX: number; pitchY: number; w: number; h: number } | null = null;
+
+function geom() {
+  if (!geomCache) {
+    const base = fx.getBoundingClientRect();
+    const c0 = cells[0].getBoundingClientRect();
+    const c1 = cells[1].getBoundingClientRect();
+    const c8 = cells[N].getBoundingClientRect();
+    geomCache = {
+      x0: c0.left - base.left,
+      y0: c0.top - base.top,
+      pitchX: c1.left - c0.left,
+      pitchY: c8.top - c0.top,
+      w: c0.width,
+      h: c0.height,
+    };
+  }
+  return geomCache;
+}
+
+/** Nach Größenänderung neu messen lassen; mit `measureNow` sofort (z. B. beim Aufnehmen eines Steins). */
+export function invalidateGeometry(measureNow = false): void {
+  geomCache = null;
+  if (measureNow) geom();
+}
+
 /** Zellposition relativ zur Effektebene über dem Spielfeld. */
 export function cellRect(i: number): { x: number; y: number; w: number; h: number } {
-  const base = fx.getBoundingClientRect();
-  const r = cells[i].getBoundingClientRect();
-  return { x: r.left - base.left, y: r.top - base.top, w: r.width, h: r.height };
+  const g = geom();
+  return { x: g.x0 + (i % N) * g.pitchX, y: g.y0 + Math.floor(i / N) * g.pitchY, w: g.w, h: g.h };
 }
 
 export function centroid(indices: number[]): Pt {
@@ -56,7 +107,118 @@ export function text3d(content: string, variant = "gold", extra = ""): HTMLSpanE
   return s;
 }
 
+// ---------- Partikel auf einer Zeichenfläche ----------
+// Scherben und Funken werden auf ein einziges Canvas gezeichnet statt als viele animierte
+// Elemente – das spart auf dem Handy Grafikebenen, Stilberechnung und Zeichenarbeit.
+
+interface Particle {
+  x: number;
+  y: number;
+  dx: number;
+  dy: number;
+  size: number;
+  rot: number;
+  color: string;
+  /** Start (ms, performance.now) und Dauer */
+  t0: number;
+  life: number;
+  round: boolean;
+  glow: boolean;
+}
+
+const MARGIN = 110;
+let canvas: HTMLCanvasElement | null = null;
+let ctx2d: CanvasRenderingContext2D | null = null;
+let particles: Particle[] = [];
+let particleFrame = 0;
+
+function ensureCanvas(): CanvasRenderingContext2D | null {
+  const w = fx.clientWidth + 2 * MARGIN;
+  const h = fx.clientHeight + 2 * MARGIN;
+  // Einfache Auflösung reicht für schnell fliegende Partikel und hält die Bildübertragung klein
+  const dpr = 1;
+  if (!canvas) {
+    canvas = document.createElement("canvas");
+    canvas.className = "fx-canvas";
+    fx.appendChild(canvas);
+    ctx2d = canvas.getContext("2d");
+  }
+  // Neues Spiel leert die Effektebene – dann Zeichenfläche wieder einhängen
+  if (!canvas.isConnected) fx.appendChild(canvas);
+  if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
+    ctx2d?.setTransform(dpr, 0, 0, dpr, MARGIN * dpr, MARGIN * dpr);
+  }
+  return ctx2d;
+}
+
+const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+
+function drawParticles(now: number): void {
+  const c = ctx2d!;
+  c.clearRect(-MARGIN, -MARGIN, canvas!.width, canvas!.height);
+  particles = particles.filter((p) => now - p.t0 < p.life);
+  for (const p of particles) {
+    const t = (now - p.t0) / p.life;
+    if (t < 0) continue;
+    const e = easeOut(t);
+    const x = p.x + p.dx * e;
+    const y = p.y + p.dy * e;
+    const s = p.size * (p.round ? 1 - 0.7 * t : 1);
+    c.globalAlpha = 1 - t;
+    c.fillStyle = p.color;
+    if (p.round) {
+      if (p.glow) {
+        c.globalAlpha = (1 - t) * 0.35;
+        c.beginPath();
+        c.arc(x, y, s * 1.8, 0, Math.PI * 2);
+        c.fill();
+        c.globalAlpha = 1 - t;
+      }
+      c.beginPath();
+      c.arc(x, y, s / 2, 0, Math.PI * 2);
+      c.fill();
+    } else {
+      c.save();
+      c.translate(x, y);
+      c.rotate(p.rot * e);
+      c.fillRect(-s / 2, -s / 2, s, s);
+      c.fillStyle = "rgba(255, 255, 255, 0.3)";
+      c.fillRect(-s / 2, -s / 2, s, s / 2);
+      c.restore();
+    }
+  }
+  c.globalAlpha = 1;
+  particleFrame = particles.length ? requestAnimationFrame(drawParticles) : 0;
+}
+
+function addParticles(list: Particle[]): void {
+  if (!ensureCanvas()) return;
+  particles.push(...list);
+  if (!particleFrame) particleFrame = requestAnimationFrame(drawParticles);
+}
+
+/** Farbwert einer Blockfarbe (1–8) im aktiven Thema. */
+function blockColor(c: string): string {
+  if (!/^\d$/.test(c)) return c;
+  return getComputedStyle(document.body).getPropertyValue(`--p${c}`).trim() || "#ff69b4";
+}
+
 export function sparks(at: Pt, count: number, spread = 50, color = "#fff", delay = 0, parent: HTMLElement = fx): void {
+  if (parent === fx) {
+    const now = performance.now();
+    const list: Particle[] = [];
+    for (let k = 0; k < count; k++) {
+      const a = rand(0, Math.PI * 2);
+      const d = spread * rand(0.4, 1);
+      list.push({ x: at.x, y: at.y, dx: Math.cos(a) * d, dy: Math.sin(a) * d, size: 6, rot: 0, color, t0: now + delay, life: 450, round: true, glow: true });
+    }
+    addParticles(list);
+    return;
+  }
   for (let k = 0; k < count; k++) {
     const a = rand(0, Math.PI * 2);
     const d = spread * rand(0.4, 1);
@@ -79,7 +241,7 @@ export function sparks(at: Pt, count: number, spread = 50, color = "#fff", delay
 export function placeSparkles(indices: number[]): void {
   for (const i of indices) {
     const r = cellRect(i);
-    sparks({ x: r.x + rand(0, r.w), y: r.y + rand(0, r.h) }, 2, 26, "#ffd76a");
+    sparks({ x: r.x + rand(0, r.w), y: r.y + rand(0, r.h) }, 1, 26, "#ffd76a");
   }
 }
 
@@ -91,6 +253,8 @@ export function shatter(indices: number[], colorOf: (i: number) => string, rows:
   const or = origin.reduce((s, i) => s + Math.floor(i / N), 0) / origin.length;
   const oc = origin.reduce((s, i) => s + (i % N), 0) / origin.length;
   const rowSet = new Set(rows);
+  const now = performance.now();
+  const shards: Particle[] = [];
   for (const i of indices) {
     const row = Math.floor(i / N);
     const col = i % N;
@@ -110,24 +274,26 @@ export function shatter(indices: number[], colorOf: (i: number) => string, rows:
     });
     cell.dataset.c = color;
     spawn(cell, 380 + delay);
-    for (let k = 0; k < 7; k++) {
+    const rgb = blockColor(color);
+    for (let k = 0; k < 5; k++) {
       const along = away * rand(30, 110);
       const across = rand(-28, 28);
-      const shard = div("shard", {
-        left: `${r.x + rand(0, r.w * 0.75)}px`,
-        top: `${r.y + rand(0, r.h * 0.75)}px`,
-        animationDelay: `${delay + 150}ms`,
-        "--s": `${rand(r.w * 0.14, r.w * 0.3)}px`,
-        "--dx": `${horizontal ? along : across}px`,
-        "--dy": `${(horizontal ? across : along) + rand(0, 25)}px`,
-        "--rot": `${rand(-400, 400)}deg`,
+      shards.push({
+        x: r.x + rand(r.w * 0.15, r.w * 0.85),
+        y: r.y + rand(r.h * 0.15, r.h * 0.85),
+        dx: horizontal ? along : across,
+        dy: (horizontal ? across : along) + rand(0, 25),
+        size: rand(r.w * 0.18, r.w * 0.32),
+        rot: rand(-7, 7),
+        color: rgb,
+        t0: now + delay + 150,
+        life: 500,
+        round: false,
+        glow: false,
       });
-      shard.dataset.c = color;
-      shard.style.opacity = "0";
-      shard.style.animationFillMode = "both";
-      spawn(shard, 700 + delay);
     }
   }
+  addParticles(shards);
 }
 
 /** Heller Lichtstreifen über jeder geschafften Linie. */
@@ -160,7 +326,11 @@ export function cellNumbers(indices: number[], n: number): void {
       height: `${r.h}px`,
       animationDelay: `${(k % N) * 15}ms`,
     });
-    el.appendChild(text3d(String(n), "orange"));
+    // einfache Schrift statt 3D-Filter: 16+ gleichzeitige Filter bringen schwächere Handys ins Stocken
+    const num = document.createElement("span");
+    num.className = "num-lite";
+    num.textContent = String(n);
+    el.appendChild(num);
     el.style.opacity = "0";
     el.style.animationFillMode = "both";
     spawn(el, 700 + (k % N) * 15);
